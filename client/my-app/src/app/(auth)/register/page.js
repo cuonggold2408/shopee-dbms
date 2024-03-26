@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
@@ -7,11 +8,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import googleIcon from "../../../../public/image/google-icon1.png";
 import Footer from "../../footer/page";
+<<<<<<< HEAD
+=======
+
+import Register from "./Register";
+
+>>>>>>> 274ecbd7cd44dfc3f64d9407f49b58ad4fe876f2
 
 export const metadata = {
-    title: "Register",
-    description: "Trang đăng ký",
+  title: "Register",
+  description: "Trang đăng ký",
 };
+
 
 export default function Register() {
     return (
@@ -131,3 +139,7 @@ export default function Register() {
         </Fragment >
     );
 }       
+export default function RegisterPage() {
+  return <Register />;
+}
+
