@@ -6,6 +6,8 @@ import logoShopee from "../../../../public/image/shopee-logo.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import googleIcon from "../../../../public/image/google-icon1.png";
+import Footer from "@/app/footer/page";
+
 export const metadata = {
   title: "Login",
   description: "Trang đăng nhập",
@@ -159,6 +161,7 @@ export default function Login() {
           </div>
         </div>
       </main>
+      <Footer />
     </Fragment >
   );
 }
