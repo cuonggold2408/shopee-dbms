@@ -6,6 +6,7 @@ import logoShopee from "../../../../public/image/shopee-logo.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import googleIcon from "../../../../public/image/google-icon1.png";
+import Footer from "../../footer/page";
 
 export const metadata = {
     title: "Register",
@@ -126,6 +127,7 @@ export default function Register() {
                     </div>
                 </div>
             </main>
+            <Footer />
         </Fragment >
     );
 }       
