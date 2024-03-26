@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { ToastContainer } from "react-toastify";
 import showToast from "../../../app/helpers/Toastify";
 import { emailRegex } from "@/app/helpers/matchEmail";
+// import Footer from "@/app/footer/page";
 
 export default function Register() {
   const [isLoading, setLoading] = useState(false);
@@ -214,7 +215,9 @@ export default function Register() {
           </div>
         </div>
       </main>
+      {/* <Footer /> */}
       <ToastContainer />
+
     </Fragment>
   );
 }

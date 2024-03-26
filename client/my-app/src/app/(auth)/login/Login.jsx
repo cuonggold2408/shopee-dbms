@@ -13,7 +13,7 @@ import { client } from "@/app/helpers/fetch_api/client";
 import showToast from "@/app/helpers/Toastify";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-
+// import Footer from "@/app/footer/page";
 export default function Login() {
   const router = useRouter();
   const handleLogin = async (e) => {
@@ -194,6 +194,7 @@ export default function Login() {
           </div>
         </div>
       </main>
+      {/* <Footer /> */}
       <ToastContainer />
     </Fragment>
   );
