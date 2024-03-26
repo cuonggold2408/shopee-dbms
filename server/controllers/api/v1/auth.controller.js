@@ -10,8 +10,8 @@ const { errorResponse, successResponse } = require("../../../utils/response");
 module.exports = {
   register: async (req, res) => {
     try {
-      const { email, password } = req.body;
-      if (!email || !password) {
+      const { email, password, username, phone_number } = req.body;
+      if (!email || !password || !username || !phone_number) {
         return errorResponse(res, 400, "Bad Request");
       }
       const user = await User.findOne({ where: { email } });
@@ -23,6 +23,8 @@ module.exports = {
       const createUser = await User.create({
         email,
         password: hashPassword,
+        username,
+        phone_number,
       });
       return successResponse(res, 201, "Tạo tài khoản thành công");
     } catch (e) {
@@ -83,7 +85,7 @@ module.exports = {
       });
 
       if (blacklist) {
-        return successResponse(res, 200, "Success");
+        return successResponse(res, 200, "Đăng xuất thành công");
       }
     } catch (e) {
       return errorResponse(res, 500, "Server Error");

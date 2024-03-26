@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
@@ -8,10 +9,14 @@ import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import googleIcon from "../../../../public/image/google-icon1.png";
 import Footer from "@/app/footer/page";
 
+import Login from "./Login";
+
+
 export const metadata = {
   title: "Login",
   description: "Trang đăng nhập",
 };
+
 
 export default function Login() {
   return (
@@ -164,4 +169,7 @@ export default function Login() {
       <Footer />
     </Fragment >
   );
+
+export default function LoginPage() {
+  return <Login />;
 }
