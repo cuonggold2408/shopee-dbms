@@ -7,6 +7,7 @@ const showToast = (type, message, callback) => {
       toast.success(message, {
         position: toast.POSITION.TOP_RIGHT,
         autoClose: 3000,
+        onClose: callback,
       });
       break;
     case "warn":

@@ -66,7 +66,11 @@ export default function Register() {
       const response = await client.post("/auth/register", userData);
       if (response.data.status === 201) {
         setLoading(false);
-        showToast("success", "Đăng ký thành công");
+        showToast(
+          "success",
+          "Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập",
+          () => router.push("/login")
+        );
         setForm({
           username: "",
           phone_number: "",
@@ -217,7 +221,6 @@ export default function Register() {
       </main>
       <Footer />
       <ToastContainer />
-
     </Fragment>
   );
 }
