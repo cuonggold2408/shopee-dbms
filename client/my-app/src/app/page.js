@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import Home from "./Home";
+import Home from "./(home)/Home";
 import { ToastContainer } from "react-toastify";
 
 export default function HomePage() {

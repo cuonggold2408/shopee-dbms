@@ -1,10 +1,13 @@
 "use client";
 
 import Cookies from "js-cookie";
-import { useEffect } from "react";
-import showToast from "./helpers/Toastify";
-import { client } from "./helpers/fetch_api/client";
+import { Fragment, useEffect } from "react";
+import showToast from "../helpers/Toastify";
+import { client } from "../helpers/fetch_api/client";
 import { useRouter } from "next/navigation";
+import Header from "./header/Header";
+import Main from "./main/Main";
+import Footer from "./footer/Footer";
 
 export default function Home() {
   const router = useRouter();
@@ -23,5 +26,12 @@ export default function Home() {
       console.log(e);
     }
   };
-  return <button onClick={handleLogOut}>Đăng xuất</button>;
+  return (
+    <Fragment>
+      <Header />
+      <Main />
+      <Footer />
+      {/* <button onClick={handleLogOut}>Đăng xuất</button>; */}
+    </Fragment>
+  );
 }
