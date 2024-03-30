@@ -14,18 +14,12 @@ import Footer from "@/app/footer/footer";
 
 export default function Register() {
   const [isLoading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    username: "",
-    phone_number: "",
-    email: "",
-    password: "",
-    confirm_password: "",
-  });
+
   const router = useRouter();
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setForm((prev) => ({ ...prev, [name]: value }));
+  // };
   const handleRegister = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -54,7 +48,7 @@ export default function Register() {
     }
 
     const userData = {
-      username: formData.get("username"),
+      username: formData.get("username").toLowerCase(),
       phone_number: formData.get("phone_number"),
       email: formData.get("email"),
       password: formData.get("password"),
@@ -71,13 +65,6 @@ export default function Register() {
           "Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập",
           () => router.push("/login")
         );
-        setForm({
-          username: "",
-          phone_number: "",
-          email: "",
-          password: "",
-          confirm_password: "",
-        });
       }
     } catch (e) {
       console.log(e);
@@ -151,8 +138,6 @@ export default function Register() {
                         }}
                         type="text"
                         placeholder="Username..."
-                        value={form.username}
-                        onChange={handleInputChange}
                         name="username"
                         className="border-gray-500 border-2 mt-3 p-2 mb-3"
                       />
@@ -162,8 +147,6 @@ export default function Register() {
                           width: "40%",
                         }}
                         type="text"
-                        value={form.phone_number}
-                        onChange={handleInputChange}
                         placeholder="Số điện thoại..."
                         name="phone_number"
                         className="border-gray-500 border-2 mt-3 p-2 mb-3"
@@ -173,8 +156,6 @@ export default function Register() {
                       style={{ border: "1px solid rgba(0,0,0,.26)" }}
                       type="email"
                       placeholder="Email..."
-                      value={form.email}
-                      onChange={handleInputChange}
                       name="email"
                       className="border-gray-500 w-full border-2 mt-3 p-2 mb-3"
                     />
@@ -182,16 +163,12 @@ export default function Register() {
                       style={{ border: "1px solid rgba(0,0,0,.26)" }}
                       type="password"
                       name="password"
-                      value={form.password}
-                      onChange={handleInputChange}
                       placeholder="Mật khẩu..."
                       className="border-gray-500 w-full border-2 mt-3 p-2 mb-3"
                     />
                     <input
                       style={{ border: "1px solid rgba(0,0,0,.26)" }}
                       type="password"
-                      value={form.confirm_password}
-                      onChange={handleInputChange}
                       name="confirm_password"
                       placeholder="Xác nhận mật khẩu..."
                       className="border-gray-500 w-full border-2 mt-3 p-2 mb-3"

@@ -13,4 +13,5 @@ router.post("/v1/auth/logout", authMiddleware, authController.logout);
 
 router.post("/v1/auth/refresh", authController.refresh);
 
+
 module.exports = router;

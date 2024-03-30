@@ -12,7 +12,7 @@ module.exports = {
     try {
       const { email, password, username, phone_number } = req.body;
       if (!email || !password || !username || !phone_number) {
-        return errorResponse(res, 400, "Bad Request");
+        return errorResponse(res, 400, "Vui lòng nhập đầy đủ thông tin");
       }
       const user = await User.findOne({ where: { email } });
       // console.log(user);
@@ -29,7 +29,7 @@ module.exports = {
       return successResponse(res, 201, "Tạo tài khoản thành công");
     } catch (e) {
       console.log(e);
-      return errorResponse(res, 400, "Bad Request");
+      return errorResponse(res, 500, "Đã có lỗi xảy ra");
     }
   },
 
