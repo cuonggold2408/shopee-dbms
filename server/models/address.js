@@ -4,6 +4,12 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Address extends Model {
+
+    static associate(models) {
+      // mối quan hệ nhiều-nhiều với User thông qua UserAddress
+      Address.belongsToMany(models.User, { through: models.UserAddress, foreignKey: 'address_id', otherKey: 'user_id' });
+    }
+
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
