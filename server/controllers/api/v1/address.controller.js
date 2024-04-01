@@ -1,34 +1,31 @@
 const { User, Address} = require("../../../models/index");
-
 const { errorResponse, successResponse } = require("../../../utils/response");
 
 module.exports = {
-    getUserAddresses: async (req, res) => {
-        try {
-          const userId = 1; //req.params.userId; // giả sử nhận id là 1;
-          const userWithAddresses = await User.findByPk(userId, {
-            include: [{
-              model: Address,
-              through: {
-                attributes: [], // không lấy thuộc tính nào từ bảng trung gian
-              },
-            }],
-          });
-      
-          if (!userWithAddresses) {
-            console.log(userWithAddresses)
-            // return res.status(404).send({ message: 'User not found' });
-            return errorResponse(res, 404, "Tài khoản chưa đăng ký address");
-
-          }
-      
-        //   res.send(userWithAddresses.Addresses);
-        console.log(userWithAddresses.Address);
-        return successResponse(res, 201, 'Lấy address thành công');
-          
-        } catch (error) {
-          console.error('Error getting user addresses:', error);
-          return errorResponse(res, 500, "Đã có lỗi xảy ra");
+    getAllAddressesByUserId: async (req, res) => {
+      try {
+        const id = req.params.id; // Lấy userId từ URL hoặc từ request body, phụ thuộc vào cách bạn thiết lập routing trong ứng dụng của mình
+    
+        // Tìm người dùng trong cơ sở dữ liệu
+        const user = await User.findByPk(id);
+    
+        if (!user) {
+          return errorResponse(res, 404, "Người dùng không tồn tại");
         }
+
+        const addresses = await user.getAddresses()
+
+        if (!addresses || addresses.length === 0) {
+          return errorResponse(res, 404, "Người dùng chưa đăng ký địa chỉ");
+        } 
+        console.log(user, addresses)
+
+        return successResponse(res, 201, 'Lấy address thành công');
+
+      } catch (error) {
+        console.error('Lỗi khi lấy danh sách địa chỉ của người dùng:', error);
+        // res.status(500).json({ error: 'Lỗi khi lấy danh sách địa chỉ của người dùng' });
+        return errorResponse(res, 500, "Lỗi khi lấy địa chỉ danh sách người dùng");
+      }
     }
-} 
+}

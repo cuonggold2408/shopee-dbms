@@ -14,6 +14,6 @@ router.post("/v1/auth/logout", authMiddleware, authController.logout);
 
 router.post("/v1/auth/refresh", authController.refresh);
 
-router.get("v1/auth/users/address", addressController.getUserAddresses)
+router.get("/v1/auth/users/address/:id", addressController.getAllAddressesByUserId)
 
 module.exports = router;
