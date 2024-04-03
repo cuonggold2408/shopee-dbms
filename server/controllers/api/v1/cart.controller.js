@@ -19,7 +19,7 @@ module.exports = {
             }
             
             console.log(user, cart);
-            return successResponse(res, 201, 'Lấy cart thành công');
+            return successResponse(res, 201, 'Lấy cart thành công', {cart});
 
 
         } catch (error) {

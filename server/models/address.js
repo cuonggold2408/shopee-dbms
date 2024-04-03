@@ -11,6 +11,16 @@ module.exports = (sequelize, DataTypes) => {
 
   Address.init(
     {
+      users_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'User', // Tham chiếu đến bảng User
+          key: 'users_id' // Tham chiếu đến khóa chính của bảng User
+        },
+        onUpdate: 'CASCADE', // Cập nhật các address khi user được cập nhật
+        onDelete: 'CASCADE' // Xóa các address khi user được xóa
+      },
       address_id: {
         allowNull: false,
         autoIncrement: true,
@@ -31,16 +41,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       default_address: {
         type: DataTypes.BOOLEAN
-      },
-      users_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'User', // Tham chiếu đến bảng User
-          key: 'users_id' // Tham chiếu đến khóa chính của bảng User
-        },
-        onUpdate: 'CASCADE', // Cập nhật các address khi user được cập nhật
-        onDelete: 'CASCADE' // Xóa các address khi user được xóa
       },
     },
     {

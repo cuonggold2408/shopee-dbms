@@ -15,8 +15,11 @@ router.post("/v1/auth/logout", authMiddleware, authController.logout);
 
 router.post("/v1/auth/refresh", authController.refresh);
 
-router.get("/v1/auth/users/address/:id", addressController.getAllAddressesByUserId);
+router.get("/v1/auth/users/get/address/:id", addressController.getAllAddressesByUserId);
 
-router.get("/v1/auth/users/cart/:id", cartController.getUserCart);
+router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
+
+router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
+
 
 module.exports = router;
