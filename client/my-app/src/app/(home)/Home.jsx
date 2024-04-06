@@ -7,7 +7,7 @@ import { client } from "../helpers/fetch_api/client";
 import { useRouter } from "next/navigation";
 import Header from "./header/Header";
 import Main from "./main/Main";
-import Footer from "./footer/Footer";
+import Footer from "./../footer/Footer"
 
 export default function Home() {
   const router = useRouter();

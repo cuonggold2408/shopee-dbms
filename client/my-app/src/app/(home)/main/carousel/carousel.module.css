@@ -1,0 +1,48 @@
+/* Carousel.css */
+.carousel-arrow {
+    color: black;
+    font-size: 2em;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.carousel-arrow.carousel-next {
+    right: 2%;
+}
+
+.carousel-arrow.carousel-prev {
+    left: 2%;
+}
+
+.slick-dots {
+    position: absolute;
+    bottom: 10px;
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.slick-dots li button:before {
+    font-size: 20px;
+
+    color: #ee4d2d !important;
+}
+
+.slick-dots li.slick-active button:before {
+    /* Change the color of the active dot to red */
+    color: red !important;
+}
+
+
+
+.carousel img {
+    height: 208px;
+    object-fit: cover;
+}
+
+.slick-dots {
+    bottom: 12px !important;
+}
