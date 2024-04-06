@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Productline.belongsTo(models.Category, {
+        foreignKey: 'category_id', // Khóa ngoại của ProductLine trỏ đến khóa chính của Category
+        as: 'category' // Đặt biệt danh cho mối quan hệ, không bắt buộc
+      });
     }
   }
   Productline.init({
