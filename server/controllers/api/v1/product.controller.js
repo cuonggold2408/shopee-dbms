@@ -6,7 +6,7 @@ module.exports = {
         try{
             const id = req.params.id;
             const category = await Category.findByPk(id);
-            const categoryProductline = await category.getProductLines()
+            const categoryProductline = await category.getProductLines();
             // console.log(category);
             if(!id || !category) {
                 return errorResponse(res, 404, "Không tìm thấy danh mục");
