@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.slick-slide img {
+    display: inline-block !important;
+}

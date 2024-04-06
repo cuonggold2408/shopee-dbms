@@ -1,0 +1,38 @@
+.category {
+    margin: 30px 0;
+    width: 100%;
+    background: #fff;
+}
+
+.category .category__title {
+    padding: 10px;
+    height: 50px;
+    line-height: 50px;
+    font-size: 20px;
+    color: rgba(0, 0, 0, .54);
+    margin-bottom: 1rem;
+}
+
+.category .category-item {
+    cursor: pointer;
+    width: 10%;
+    border: 1px solid #F2F2F2;
+}
+
+.category .category-item:hover {
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.category .category-item h3 {
+    text-align: center;
+    height: 50px;
+    text-transform: capitalize;
+    font-size: 15px;
+}
+
+.category .category-item img {
+    padding: 10px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

@@ -1,0 +1,52 @@
+.container {
+    width: 80vw;
+    margin: 0 auto;
+    position: relative;
+}
+
+.main {
+    width: 100%;
+    background: #f5f5f5;
+}
+
+.carousel {
+    object-fit: cover;
+    align-items: flex-end !important;
+}
+
+/* b bor cai margin top thi can  */
+.banner {
+    margin-top: 30px;
+    width: 100%;
+    display: flex;
+    min-height: min-content;
+    overflow: hidden;
+    /* Use flexbox */
+}
+
+.banner .carousel {
+    flex: 2;
+    /* Take up twice as much space as .small-banner */
+    width: 65%;
+    height: 100%;
+}
+
+.small-banner {
+    flex: 1;
+    /* Take up half as much space as .carousel */
+    width: 35%;
+    height: 50%;
+    /* Make it half the height of .carousel */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Add space between the two images */
+}
+
+.small-banner .small__banner-item {
+    object-fit: cover;
+    width: 100%;
+    height: 50%;
+
+    object-position: bottom;
+}
