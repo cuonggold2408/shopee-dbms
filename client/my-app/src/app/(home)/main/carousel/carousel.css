@@ -1,0 +1,42 @@
+.slick-dots {
+
+    bottom: 12px;
+}
+
+
+.slick-dots .slick-active button {
+    color: #ee4d2d;
+}
+
+.slick-dots button {
+    font-size: 0;
+    width: 15px;
+    height: 15px;
+    border-radius: 100rem;
+    background-color: #eee;
+    border: none;
+    outline: none;
+    transition: all 0.2s linear;
+}
+
+.image-title {
+    font-size: 20px;
+    color: #8e8fb5;
+}
+
+
+.slick-dots li button:before {
+    font-family: 'slick';
+    font-size: 14px;
+    line-height: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    content: '•';
+    text-align: center;
+    opacity: .25;
+    color: black;
+
+}

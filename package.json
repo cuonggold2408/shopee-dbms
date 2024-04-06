@@ -12,7 +12,6 @@
     "clsx": "^2.1.0",
     "cookie-cutter": "^0.2.0",
     "js-cookie": "^3.0.5",
-    "react-dom": "^18.2.0",
-    "react-toastify": "^10.0.5"
+    "react-dom": "^18.2.0"
   }
 }
