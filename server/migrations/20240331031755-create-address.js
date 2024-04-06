@@ -9,6 +9,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      users_id: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'users'
+          },
+          key: 'users_id'
+        } 
+      },
       address_line: {
         type: Sequelize.STRING(255)
       },

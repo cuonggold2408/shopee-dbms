@@ -1,0 +1,131 @@
+/* header  */
+.header {
+    width: 100%;
+    background-image: linear-gradient(to right, rgb(250, 82, 48), rgb(247, 72, 46));
+}
+
+.main {
+    color: #fff;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.main .contact-item {
+    padding: 5px;
+    border-right: 3px solid rgb(249, 108, 92);
+}
+
+.main .contact-item:last-child {
+    border-right: none;
+}
+
+.search-form {
+    color: #000;
+    font-size: 14px;
+    width: 700px;
+    padding: 5px 20px;
+    margin-right: 5px;
+}
+
+.btn-search {
+    border: none;
+    padding: 5px 20px;
+    background-color: #FB5533;
+}
+
+.btn-search:hover {
+    background-color: #F7684A;
+}
+
+.search-bar {
+    border-radius: 2px;
+    padding: 4px;
+    background-color: #fff;
+
+}
+
+.cart-icon {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 25px;
+    margin-left: 5rem;
+    padding: 5px;
+    position: relative;
+
+}
+
+.cart {
+
+    position: relative;
+}
+
+.cart-count {
+    color: #ee4d2d;
+    background-color: #fff;
+    padding: 1px 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1rem;
+    border-radius: 8px;
+    border: 2px solid #ee4d2d;
+    position: absolute;
+    top: -8px;
+    right: -14px;
+
+}
+
+.list-cart {
+    z-index: 1;
+    animation: show linear 0.3s;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px;
+    position: absolute;
+    top: 100%;
+    left: -236%;
+    margin-top: 10px;
+    width: 400px;
+    background: #fff;
+    display: none;
+}
+
+
+.cart:hover .list-cart {
+    display: block;
+}
+
+.list-cart::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -22px;
+    right: 0;
+    border-style: solid;
+    border-color: transparent transparent #fff transparent;
+    border-width: 15px 18px;
+    cursor: pointer;
+}
+
+.cart .list-cart .content-product {
+    color: #000;
+
+}
+
+.cart .list-cart .price-product {
+    color: #ee4d2d;
+
+}
+
+/* animation */
+@keyframes show {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* end header*/
