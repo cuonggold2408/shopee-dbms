@@ -2,24 +2,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('classifyoptions', {
+    await queryInterface.createTable('productimages', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
-      classify_id: {
+      option_id: {
         type: Sequelize.INTEGER,
-        references:{
+        references: {
           model:{
-            tableName:"productclassifies",
-            key:"id"
-          }
-        } 
+            tableName:"classifyoptions",
+          },
+          key:"id"
+        }
       },
-      option_name: {
-        type: Sequelize.STRING(200)
+      image_link: {
+        type:Sequelize.STRING
       },
       created_at: {
         allowNull: false,
@@ -32,6 +32,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('classifyoptions');
+    await queryInterface.dropTable('productimages');
   }
 };
