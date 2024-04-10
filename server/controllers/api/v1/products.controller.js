@@ -1,4 +1,4 @@
-const { Product, Productline, ProductClassify, Category, ClassifyOption } = require("../../../models/index");
+const { Product, Productline, ProductClassify, Category, ClassifyOption, ProductImage } = require("../../../models/index");
 const { errorResponse, successResponse } = require("../../../utils/response");
 
 module.exports = {
@@ -23,11 +23,17 @@ module.exports = {
               {
                 model: ClassifyOption,
                 attributes: ['option_name'],
+                include: [
+                  {
+                  model: ProductImage,
+                  attributes: ['image_link'],
+                  }
+                ]
               }
             ]
           },
         ],
-        attributes: ['product_name', 'description', 'quantity_in_stock', 'price'],
+        attributes: ['id', 'product_name', 'description', 'quantity_in_stock', 'price'],
       });
       if (!product) {
         return errorResponse(res, 404, "Not Found");
