@@ -44,19 +44,18 @@
 
 }
 
+
+
 .cart-icon {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    font-size: 25px;
-    margin-left: 5rem;
-    padding: 5px;
+    margin-left: 5.25rem;
     position: relative;
 
 }
 
 .cart {
-
     position: relative;
 }
 
