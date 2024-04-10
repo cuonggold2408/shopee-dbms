@@ -22,7 +22,11 @@ router.post("/v1/auth/logout", authMiddleware, authController.logout);
 
 router.post("/v1/auth/refresh", authController.refresh);
 
+
 router.get("/v1/products/category/:id", productController.getOneCategory)
+
+router.get("/v1/products/category/:id",productsController.getOneCategory)
+
 
 
 
