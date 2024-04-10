@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      ProductImage.belongsTo(models.ClassifyOption, {foreignKey:'option_id'})
     }
   }
   ProductImage.init({

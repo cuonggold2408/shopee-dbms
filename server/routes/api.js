@@ -2,7 +2,6 @@ var express = require("express");
 const authController = require("../controllers/api/v1/auth.controller");
 const authMiddleware = require("../middlewares/api/auth.middleware");
 
-const productController = require("../controllers/api/v1/product.controller");
 
 
 const productsController = require("../controllers/api/v1/products.controller");
