@@ -1,0 +1,154 @@
+.main {
+    background: #f5f5f5;
+    width: 100%;
+}
+
+.main .container {
+    margin: 0 auto;
+    width: 80vw;
+    height: auto;
+    overflow: hidden;
+}
+
+.main .container .nav {
+    height: 50px;
+    padding: 0px 10px;
+    color: #05a;
+}
+
+.main .container .nav .title__product {
+    color: #000;
+}
+
+.breadcrumb li {
+    display: inline;
+}
+
+.breadcrumb li+li:before {
+    color: #000;
+    content: ">";
+    padding: 0 5px;
+}
+
+.main .container .product__img {
+    margin-right: 30px;
+    object-fit: cover;
+    width: 40%;
+}
+
+.main .container .product__desc {
+    width: 60%;
+    padding: 0 20px;
+}
+
+.main .container .product__desc h2 {
+    font-size: 24px;
+
+}
+
+.rating {
+    color: #ff4d2d;
+}
+
+.rating span {
+    text-decoration: underline;
+}
+
+
+.main .container .product__desc .price__old {
+    text-decoration: line-through;
+    color: #929292;
+    font-size: 15px;
+}
+
+.main .container .product__desc .price__new {
+    color: #ff4d2d;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.main .container .product__desc .sell__product {
+    background-color: #d0011b;
+    border: 0;
+    color: #fff;
+    font-size: 13px;
+    height: fit-content;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+.icon-product {
+    width: 24px;
+    height: 24px;
+}
+
+.title__item {
+
+    color: #757575;
+    width: 20%;
+}
+
+.main .container .product__desc .classify__product .classify__item {
+    display: flex;
+    border-radius: 5px;
+    gap: 5px;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.main .container .product__desc .classify__product .classify__item:hover {
+    border: 1px solid #d0011b;
+}
+
+.main .container .product__desc .quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5px;
+    width: 50px;
+
+}
+
+.quantity,
+.btn__quantity {
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    color: #000;
+    cursor: pointer;
+}
+
+.btn__quantity {
+    padding: 5px 12px;
+}
+
+.quantity__stock {
+    color: #757575;
+}
+
+
+.main .container .product__desc .btn__buy {
+    background-color: #d0011b;
+    border: 0;
+    color: #fff;
+    font-size: 15px;
+    padding: 12px 48px;
+    border-radius: 2px;
+
+    cursor: pointer;
+}
+
+.main .container .product__desc .btn__add {
+    background-color: rgb(251, 235, 237);
+    border: 1px solid #d0011b;
+
+    color: #D8011B;
+    font-size: 15px;
+    padding: 12px 20px;
+    border-radius: 2px;
+
+}
+
+.main .container .product__desc .btn__add:hover {
+    background-color: #fff;
+}

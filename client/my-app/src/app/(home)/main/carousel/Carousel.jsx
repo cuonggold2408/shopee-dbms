@@ -2,7 +2,7 @@ import React from 'react';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import "./carousel.css";
+import styles from "./carousel.css";
 import Image from "next/image";
 import image1 from "../../../../../public/image/image-1.jpg"
 import image2 from "../../../../../public/image/image-2.png"
@@ -40,7 +40,6 @@ function Carousel({ className }) {
         nextArrow: <NextArrow />,
         prevArrow: <PrevArrow />,
     };
-    // đợi
     return (
         <Slider style={{ height: "100%" }} {...settings} className={className}>
             <div className='h-full'>
@@ -52,7 +51,6 @@ function Carousel({ className }) {
             <div className='h-full'>
                 <Image className='h-full' src={image3} alt="Image 3" />
             </div>
-            {/* Add more images as needed */}
         </Slider>
     );
 }

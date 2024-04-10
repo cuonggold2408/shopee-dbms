@@ -1,17 +1,26 @@
 import React from "react";
 import clsx from "clsx";
-import style from "./product.module.css";
+import style from "./products.module.css";
 import { Fragment } from "react";
 import Image from "next/image";
 import ProductImg from "../../../../../../public/image/product.jpg";
-export default function Product() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import ReactDOM from "react-dom";
+
+export default function Products() {
+    const router = useRouter();
+    const navigateToProduct = () => {
+        console.log(router);
+        router.push('/product');
+    }
 
     return (
         <Fragment>
             <div className={clsx(style["list-product"], "flex", "flex-wrap", "items-center", "justify-center")}>
-                <div className={clsx(style["box-product"])}>
+                <div className={clsx(style["box-product"])} onClick={navigateToProduct}>
                     <div className={clsx(style.product)}>
-                        <Image src={ProductImg} alt="Product" className={clsx(style["img-product"])}></Image>
+                        <Image src={ProductImg} alt="Product" className={clsx(style["img-product"])} />
                         <div className={clsx('flex', 'flex-col')}>
                             <h3 className={clsx(style["title-product"], 'm-2')}>Áo thun nam, áo phông nam tay ngắn cổ tròn chất cotton dày dặn thoáng mát ATN010 - An Cường Fashion</h3>
                             <div className="flex items-center justify-between">

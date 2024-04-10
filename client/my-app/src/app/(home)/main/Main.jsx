@@ -6,9 +6,9 @@ import Image from "next/image";
 import style from "./main.module.css";
 import Carousel from "./carousel/Carousel";
 import BannerImg from "../../../../public/image/banner01.jpg";
-import Product from "./category/product/product";
 import { Pagination } from "@nextui-org/react";
 import Category from "./category/Category";
+import Products from "./category/products/Products";
 
 
 export default function Main() {
@@ -30,7 +30,7 @@ export default function Main() {
 
           </div>
           <Category />
-          <Product />
+          <Products />
           <div style={
             {
               padding: "10px",
