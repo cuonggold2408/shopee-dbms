@@ -1,8 +1,8 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: #cccccc7b;
-  z-index: 99999px;
+  background-color: #a4a4a47b;
+  z-index: 999;
 }
 
 .dashed-loading {
@@ -24,7 +24,7 @@
 }
 
 .dashed-loading:before {
-  z-index: 5;
+  z-index: 888;
   border: 3px dashed #ff6bcb;
   border-left: 3px solid transparent;
   border-bottom: 3px solid transparent;
@@ -33,7 +33,7 @@
 }
 
 .dashed-loading:after {
-  z-index: 10;
+  z-index: 888;
   border: 3px solid #ffb86c;
   border-left: 3px solid transparent;
   border-bottom: 3px solid transparent;
