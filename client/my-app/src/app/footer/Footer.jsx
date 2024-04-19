@@ -24,6 +24,8 @@ export default function Footer() {
     return (
         <Fragment>
             <footer style={{
+
+                borderTop: "5px solid #ee4d2d",
                 background: "#f5f5f5",
             }}>
                 <div

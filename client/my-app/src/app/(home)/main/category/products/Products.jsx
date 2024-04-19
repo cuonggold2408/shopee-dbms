@@ -12,7 +12,7 @@ import { client } from "@/app/helpers/fetch_api/client";
 import showToast from "@/app/helpers/Toastify";
 import { Pagination } from "@nextui-org/react";
 import { config } from "@/app/helpers/fetch_api/config";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 
 const { LIMIT_PAGE } = config;
 
@@ -117,7 +117,7 @@ export default function Products() {
       <div
         style={{
           padding: "10px",
-          borderBottom: "1px solid #ee4d2d",
+
         }}
         className="flex"
       >

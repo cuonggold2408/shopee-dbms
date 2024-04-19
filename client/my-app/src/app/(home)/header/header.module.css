@@ -114,6 +114,16 @@
 
 }
 
+.btn__cart {
+    font-size: 14px;
+    padding: 10px 20px;
+    background-color: #ee4d2d;
+}
+
+.btn__cart:hover {
+    background-color: #FB5533;
+}
+
 /* animation */
 @keyframes show {
     from {

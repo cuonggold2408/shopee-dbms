@@ -1,0 +1,112 @@
+.main {
+    background: #F5F5F5;
+    width: 100%;
+}
+
+.main .container {
+    width: 80vw;
+    margin: 0 auto;
+    height: auto;
+    overflow: hidden;
+    padding-bottom: 30px;
+
+}
+
+.main .container .box__freeship {
+    border: 1px solid #F3DB97;
+
+}
+
+.main .container .cart__title {
+    background: #fff;
+}
+
+.checkbox {
+    width: 46.27949%;
+    color: rgba(0, 0, 0, .8);
+}
+
+.unit__price {
+    width: 15.88022%;
+}
+
+.title__quantity {
+    width: 15.4265%;
+}
+
+.total,
+.operation {
+    width: 12.70417%;
+}
+
+.total {
+    color: #ff4d2d;
+}
+
+.main .container .list__product .product__item .title__product {
+    line-height: 16px;
+    overflow: hidden;
+    color: rgba(0, 0, 0, .87);
+    display: block;
+    display: -webkit-box;
+    margin-bottom: 5px;
+    max-height: 32px;
+    -webkit-text-decoration: none;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    word-break: break-all;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    width: 35%;
+    font-size: 14px;
+}
+
+
+
+
+.main .container .list__product .product__item {
+    background: #fff;
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.price__old {
+    color: #999;
+    text-decoration: line-through;
+}
+
+
+.quantity,
+.btn__quantity {
+
+    border: 1px solid #e0e0e0;
+    color: #000;
+    cursor: pointer;
+}
+
+.btn__quantity {
+    padding: 5px 12px;
+}
+
+
+.quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 5px;
+    width: 50px;
+
+}
+
+.btn__buy {
+    background: #ff4d2d;
+    color: #fff;
+    padding: 12px 50px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+}

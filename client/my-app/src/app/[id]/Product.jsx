@@ -32,8 +32,10 @@ export default function Product({ id }) {
   const [mainImage, setMainImage] = useState();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState([]);
+  const [selectedClassify, setSelectedClassify] = useState([]);
 
   const router = useRouter();
+
 
   const increaseQuantity = () => {
     setQuantity(quantity + 1);
@@ -43,6 +45,31 @@ export default function Product({ id }) {
       setQuantity(quantity - 1);
     }
   };
+
+  const handleColorHover = (imageLink) => {
+    console.log(imageLink);
+    setMainImage(imageLink);
+  };
+  const handleClassifyClick = (categoryIndex, optionIndex) => {
+    setSelectedClassify(prev => {
+      const newSelected = [...prev];
+      const existingIndex = newSelected.findIndex(item => item.category === categoryIndex && item.option === optionIndex);
+      if (existingIndex !== -1) {
+
+        newSelected.splice(existingIndex, 1);
+      } else {
+
+        const categoryIndexInSelected = newSelected.findIndex(item => item.category === categoryIndex);
+        if (categoryIndexInSelected !== -1) {
+          newSelected[categoryIndexInSelected] = { category: categoryIndex, option: optionIndex };
+        } else {
+          newSelected.push({ category: categoryIndex, option: optionIndex });
+        }
+      }
+      return newSelected;
+    });
+  };
+
 
   useEffect(() => {
     async function getProductById() {
@@ -145,9 +172,9 @@ export default function Product({ id }) {
                   Giảm
                 </div>
               </div>
-              {product?.ProductClassifies?.length > 1 ? (
-                product?.ProductClassifies.map((item, index) => (
-                  <Fragment key={index}>
+              {
+                product?.ProductClassifies?.map((item, classifyIndex) => (
+                  <Fragment key={classifyIndex}>
                     <div className={clsx("flex mt-5", style.classify__product)}>
                       <h3 className={style.title__item}>
                         {item.classify_name}
@@ -158,16 +185,24 @@ export default function Product({ id }) {
                         }}
                         className="flex items-center flex-wrap gap-2"
                       >
-                        {item.ClassifyOptions.map((classify, index) => (
+                        {item.ClassifyOptions.map((classify, optionIndex) => (
                           <li
-                            key={index}
-                            className="flex items-center gap-2 flex-wrap"
+                            key={optionIndex}
+                            className={clsx(
+                              "flex items-center gap-2 flex-wrap",
+
+                              { [style.selected]: selectedClassify.some(item => item.category === classifyIndex && item.option === optionIndex) }
+                            )}
                           >
-                            <button className={style.classify__item}>
+                            <button
+                              className={style.classify__item}
+                              onClick={() => handleClassifyClick(classifyIndex, optionIndex)}
+                              onMouseOver={() => classifyIndex === 0 ? handleColorHover(classify?.ProductImages[0]?.image_link) : null}
+                            >
                               {item.classify_name !== "size" ? (
                                 <Image
                                   src={classify?.ProductImages[0]?.image_link}
-                                  alt=""
+                                  alt={classify?.option_name}
                                   className={style["icon-product"]}
                                   width={24}
                                   height={24}
@@ -183,35 +218,8 @@ export default function Product({ id }) {
                     </div>
                   </Fragment>
                 ))
-              ) : (
-                <div className={clsx("flex mt-5", style.classify__product)}>
-                  <h3 className={style.title__item}>Phân loại</h3>
-                  <ul
-                    style={{
-                      width: "80%",
-                    }}
-                    className="flex items-center flex-wrap gap-2"
-                  >
-                    {product &&
-                      product?.ProductClassifies?.[0].ClassifyOptions.map(
-                        (classify) => (
-                          <li className="flex items-center gap-2 flex-wrap">
-                            <button className={style.classify__item}>
-                              <Image
-                                src={classify.ProductImages[0].image_link}
-                                alt={product.product_name}
-                                className={style["icon-product"]}
-                                width={24}
-                                height={24}
-                              />
-                              <span>{classify.option_name}</span>
-                            </button>
-                          </li>
-                        )
-                      )}
-                  </ul>
-                </div>
-              )}
+
+              }
               <div className="flex mt-5 items-center">
                 <h3 className={style.title__item}>Số lượng</h3>
                 <div className="flex items-center justify-center mr-4">
@@ -235,7 +243,7 @@ export default function Product({ id }) {
                 </div>
 
                 <div className={style.quantity__stock}>
-                  439 sản phẩm trong kho
+                  {product.quantity_in_stock > 0 ? product.quantity_in_stock : "Sản phẩm đã hết hàng"} sản phẩm có sẵn
                 </div>
               </div>
 
@@ -255,10 +263,29 @@ export default function Product({ id }) {
                 <button className={style.btn__buy}>Mua ngay</button>
               </div>
             </div>
+            <div>
+            </div>
           </div>
+          <div className="flex flex-col bg-white mt-10 px-5 py-5">
+            <div style={
+              {
+                marginBottom: "10px",
+                fontSize: "20px",
+                fontWeight: "500",
+                borderBottom: "1px solid #f5f5f5",
+                padding: "2px 0"
+              }
+            }>Mô tả sản phẩm</div>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: (product.description || '').replace(/\n/g, '<br />')
+              }}
+            />
+          </div>
+
         </div>
       </div>
       <Footer />
-    </Fragment>
+    </Fragment >
   );
 }
