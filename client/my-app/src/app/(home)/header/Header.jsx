@@ -17,7 +17,11 @@ import HelpIcon from '@mui/icons-material/Help';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useRouter } from "next/navigation";
+
 export default function Header() {
+  const router = useRouter();
+
   return (
     <Fragment>
       <header className={clsx(style.header)}>
@@ -99,10 +103,8 @@ export default function Header() {
               </ul>
             </div>
             <div className={clsx(style.cart)}>
-              <Link href={'/cart'}>
-                <ShoppingCartIcon fontSize="large" className={style['cart-icon']} />
-                <span className={clsx(style["cart-count"], "flex", "items-center", "justify-center")}>0</span>
-              </Link>
+              <ShoppingCartIcon fontSize="large" className={style['cart-icon']} />
+              <span className={clsx(style["cart-count"], "flex", "items-center", "justify-center")}>0</span>
               <div className={clsx("flex", "items-center", "flex-col", style["list-cart"])}>
                 <h3 style={{
                   marginLeft: "5px",
@@ -139,7 +141,11 @@ export default function Header() {
                     <span>50.150</span>
                   </div>
                 </div>
+                <div className="flex justify-end mr-2 mb-2">
+                  <button className={style.btn__cart} onClick={() => router.push('/cart')}>Xem giỏ hàng</button>
+                </div>
               </div>
+
             </div>
             <div>
 

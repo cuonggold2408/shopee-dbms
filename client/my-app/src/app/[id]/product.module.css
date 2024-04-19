@@ -8,11 +8,11 @@
     width: 80vw;
     height: auto;
     overflow: hidden;
+    padding-bottom: 30px;
 }
 
 .main .container .nav {
     height: 50px;
-    padding: 0px 10px;
     color: #05a;
 }
 
@@ -90,8 +90,8 @@
 
 .main .container .product__desc .classify__product .classify__item {
     display: flex;
-    border-radius: 5px;
     gap: 5px;
+    border-radius: 5px;
     padding: 10px;
     border: 1px solid #e0e0e0;
 }
@@ -151,4 +151,10 @@
 
 .main .container .product__desc .btn__add:hover {
     background-color: #fff;
+}
+
+.selected {
+    border: 1px solid #d0011b;
+    border-radius: 5px;
+    box-sizing: border-box;
 }
