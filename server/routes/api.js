@@ -4,7 +4,7 @@ const authController = require("../controllers/api/v1/auth.controller");
 const authMiddleware = require("../middlewares/api/auth.middleware");
 
 const productsController = require("../controllers/api/v1/products.controller");
-const productsControllerMongo = require("../controllers/api/v2/products.controller");
+const productsControllerMongo = require("../controllers/api/v1/product_mongo.controller");
 const addressController = require("../controllers/api/v1/address.controller");
 const cartController = require("../controllers/api/v1/cart.controller");
 
@@ -31,7 +31,7 @@ router.get("/v1/products/:id", productsController.getProductById);
 
 router.get("/v1/products/category", productsController.showCategories);
 
-router.get("/v1/auth/users/get/address/:id",addressController.getAllAddressesByUserId);
+router.get("/v1/auth/users/get/address/:id", addressController.getAllAddressesByUserId);
 
 router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
 router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
@@ -39,13 +39,13 @@ router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
 
 
 // api for mongoose
-router.get('/v2/products/get/all/evaluate', productsControllerMongo.getAllEvaluated);
-router.get('/v2/products/get/one/evaluate/:id', productsControllerMongo.getOneEvaluated);
-router.post('/v2/products/post/one/new/evaluate/:id', productsControllerMongo.pushOneEvaluate);
-router.put('/v2/products/update/one/evaluated/:id', productsControllerMongo.updateOneEvaluated);
-router.delete('/v2/products/delete/one/evaluated/:id', productsControllerMongo.deleteOneEvaluated);
+router.get('/v1/products/get/all/evaluate', productsControllerMongo.getAllEvaluated);
+router.get('/v1/products/get/one/evaluate/:id', productsControllerMongo.getOneEvaluated);
+router.post('/v1/products/post/one/new/evaluate/:id', productsControllerMongo.pushOneEvaluate);
+router.put('/v1/products/update/one/evaluated/:id', productsControllerMongo.updateOneEvaluated);
+router.delete('/v1/products/delete/one/evaluated/:id', productsControllerMongo.deleteOneEvaluated);
 
-router.get('/v2/testinsert', productsControllerMongo.testInsert);
+router.get('/v1/testinsert', productsControllerMongo.testInsert);
 
 
 
@@ -71,12 +71,12 @@ router.get('/v2/testinsert', productsControllerMongo.testInsert);
 //   res.send(doc);
 // });
 // insert data
-  // const sp = new evaluate({
-  //   product_id: 2, 
-  //   commented: "hi",
-  // });
+// const sp = new evaluate({
+//   product_id: 2, 
+//   commented: "hi",
+// });
 
-  // sp.save().then(() => {
-  //   console.log("Thêm dữ liệu thành công")
-  // }).catch((err) => {throw err})
+// sp.save().then(() => {
+//   console.log("Thêm dữ liệu thành công")
+// }).catch((err) => {throw err})
 module.exports = router;

@@ -4,8 +4,8 @@ const evaluate = require("../../../modelMongo/evaluate");
 module.exports = {
     getAllEvaluated: async (req, res) => {
         const doc = await evaluate.find({});
-        if(!doc) {
-            return errorResponsense(res, 404, "Đã xảy ra lỗi") 
+        if (!doc) {
+            return errorResponsense(res, 404, "Đã xảy ra lỗi")
         }
         else {
             return successResponse(res, 200, "Lấy thành công toàn bộ evaluate", doc);
@@ -14,39 +14,39 @@ module.exports = {
     getOneEvaluated: async (req, res) => {
         const query = evaluate.find({
             product_id: req.params.id
-          });
-          query.getFilter();
-          const doc = await query.exec();
-        if(!doc) {
-            return errorResponse(res, 404, "Đã xảy ra lỗi"); 
+        });
+        query.getFilter();
+        const doc = await query.exec();
+        if (!doc) {
+            return errorResponse(res, 404, "Đã xảy ra lỗi");
         }
         else {
             return successResponse(res, 200, "Lấy thành công evaluate", doc);
         }
     },
     pushOneEvaluate: async (req, res) => {
-        const {comment, vote} = req.body;
+        const { comment, vote } = req.body;
         const sp = new evaluate({
-                product_id: req.params.id, 
-                commented: comment,
-                voted: vote,
-              });
-              sp.save().then(() => {
-                return successResponse(res, 200, "Đẩy dữ liệu thành công");
-              }).catch((err) => {
-                // return errorResponse(res, 404, "Đã xảy ra lỗi");
-                throw err;
-              })
+            product_id: req.params.id,
+            commented: comment,
+            voted: vote,
+        });
+        sp.save().then(() => {
+            return successResponse(res, 200, "Đẩy dữ liệu thành công");
+        }).catch((err) => {
+            // return errorResponse(res, 404, "Đã xảy ra lỗi");
+            throw err;
+        })
     },
     updateOneEvaluated: async (req, res) => {
-        const filter = { product_id: req.params.id};
-        const {comment, vote} = req.body;
+        const filter = { product_id: req.params.id };
+        const { comment, vote } = req.body;
         const update = { commented: comment, voted: vote };
         const doc = await evaluate.findOneAndUpdate(filter, update, {
             new: true
         });
-        if(!doc) {
-            return errorResponse(res, 404, "Đã xảy ra lỗi"); 
+        if (!doc) {
+            return errorResponse(res, 404, "Đã xảy ra lỗi");
         }
         else {
             return successResponse(res, 200, "Update thành công", doc);
@@ -58,7 +58,7 @@ module.exports = {
             return successResponse(res, 200, "Delete thành công");
         }
         else {
-            return errorResponse(res, 404, "Đã xảy ra lỗi"); 
+            return errorResponse(res, 404, "Đã xảy ra lỗi");
         }
     },
     testInsert: async (req, res) => {
@@ -78,5 +78,5 @@ module.exports = {
             res.status(500).send("Đã xảy ra lỗi khi thêm dữ liệu");
         }
     }
-    
+
 }
