@@ -1,0 +1,10 @@
+mật khẩu, tên, link trong dbms
+t5me7jtjBalwVC4q
+dbmsAplus
+mongodb+srv://dbmsAplus:t5me7jtjBalwVC4q@cluster0.i9cysua.mongodb.net/shoppe_dbms?retryWrites=true&w=majority&appName=Cluster0
+
+
+
+tkmongodb.
+cuongbngold@gmail.com
+dbms123456@
