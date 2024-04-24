@@ -2,42 +2,35 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("user_tokens", {
+    await queryInterface.createTable("cart_detail", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-
-      user_id: {
+      cart_id: {
         type: Sequelize.INTEGER,
-        references: {
-          model: {
-            tableName: "users",
-          },
-          key: "users_id",
-        },
-        onDelete: "CASCADE",
       },
-      device_name: {
+      product_id: {
+        type: Sequelize.INTEGER,
+      },
+      image_product: {
+        type: Sequelize.TEXT,
+      },
+      product_name: {
+        type: Sequelize.TEXT,
+      },
+      product_price: {
         type: Sequelize.STRING,
       },
-      refresh_token: {
-        type: Sequelize.STRING,
+      quantity: {
+        type: Sequelize.INTEGER,
       },
-      otp: {
-        type: Sequelize.STRING,
-      },
-      expired_otp: {
-        type: Sequelize.DATE,
-      },
-
-      status: {
+      is_selected: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
-
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -49,6 +42,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("user_tokens");
+    await queryInterface.dropTable("cart_detail");
   },
 };

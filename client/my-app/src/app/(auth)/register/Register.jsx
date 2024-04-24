@@ -58,14 +58,14 @@ export default function Register() {
     try {
       setLoading(true);
       const response = await client.post("/auth/register", userData);
-      if (response.data.status === 201) {
-        setLoading(false);
-        showToast(
-          "success",
-          "Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập",
-          () => router.push("/login")
-        );
+      if (response.data.status === 400 || response.data.status === 500) {
+        showToast("error", response.data.message);
+        return;
       }
+      // setIsLoading(false);
+      showToast("success", response.data.message);
+
+      router.push("/login");
     } catch (e) {
       console.log(e);
     } finally {

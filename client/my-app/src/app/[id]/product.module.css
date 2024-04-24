@@ -158,3 +158,25 @@
     border-radius: 5px;
     box-sizing: border-box;
 }
+
+.vote__icon {
+    color: #ff4d2d;
+}
+
+.voting {
+    font-size: 22px;
+    margin-right: 5px;
+}
+
+.box__vote {
+    width: 100%;
+    padding: 15px;
+}
+
+.user__vote {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.avt__user {
+    border-radius: 50%;
+}
