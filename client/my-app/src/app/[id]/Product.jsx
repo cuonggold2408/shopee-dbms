@@ -16,6 +16,8 @@ import { client } from "../helpers/fetch_api/client";
 import Loading from "../Loading/Loading";
 import showToast from "../helpers/Toastify";
 import { useRouter } from "next/navigation";
+
+import Admin from "../../../public/image/admin2.jpg";
 import { getToken } from "../actions/gettoken.action";
 
 // Hàm để định dạng số tiền
@@ -33,6 +35,9 @@ export default function Product({ id }) {
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState([]);
   const [selectedClassify, setSelectedClassify] = useState([]);
+  
+  const [evaluates, setEvaluates] = useState([]);
+  
   const [productToCart, setProductToCart] = useState();
 
   const router = useRouter();
@@ -127,6 +132,19 @@ export default function Product({ id }) {
       }
     }
     getProductById();
+
+    async function getOneEvaluated() {
+      try {
+        const response = await client.get(`/products/get/one/evaluate/${id}`);
+        setEvaluates(response.data.data);
+      } catch (e) {
+        console.log(e);
+      }
+      finally {
+        setIsLoading(false);
+      }
+    }
+    getOneEvaluated();
   }, []);
 
   return (
@@ -327,8 +345,65 @@ export default function Product({ id }) {
               }}
             />
           </div>
+
+          <div className={clsx("bg-white mt-5 p-5")} >
+            <h2 style={{
+              textTransform: "uppercase",
+              fontWeight: "500",
+            }} className="mb-4">Đánh giá sản phẩm</h2>
+            <div className="flex items-center" style={{
+              color: "#ff4d2d",
+              background: "rgb(255, 251, 248)",
+            }}>
+              <div className="flex flex-col items-center">
+                <div className={clsx(style.box__vote)}>
+                  <div>
+                    <span className={style.voting}>4.8</span>
+                    trên 5</div>
+                  <div className="flex gap-1">
+                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
+                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
+                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
+                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
+                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {evaluates.map((evaluate, index) => (
+              <div key={index} className={clsx(style.user__vote, 'p-5')}>
+                <div className="p-2 flex">
+                  <div className="mr-3">
+                    <Image src={Admin} alt="user" width={40} height={40} className={style.avt__user} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h3>bachnguyen04</h3>
+                    <div className="flex gap-1">
+                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
+                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
+                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
+                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
+                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
+                    </div>
+                    <div className="flex gap-3" style={{
+                      color: "rgb(200,200,200)",
+                      fontSize: "13px"
+                    }}>
+                      <div>{evaluate.createdAt}</div>
+                      <div>Phân loại hàng: Trắng + Xám,Thùng 300 cái</div>
+                    </div>
+                    <div className={style.cmt}>
+                      {evaluate.commented}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+
       <Footer />
     </Fragment>
   );
