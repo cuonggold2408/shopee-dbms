@@ -337,7 +337,7 @@ CREATE TABLE public.products (
     id integer NOT NULL,
     productline_id integer,
     product_name character varying(200),
-    description character varying(5000),
+    description text,
     quantity_in_stock integer,
     price numeric,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -376,7 +376,11 @@ ALTER SEQUENCE public.products_id_seq OWNED BY public.products.id;
 CREATE TABLE public.user_tokens (
     id integer NOT NULL,
     user_id integer,
+    device_name character varying(255),
     refresh_token character varying(255),
+    otp character varying(4),
+    expired_otp timestamp with time zone NOT NULL,
+    status boolean,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
@@ -413,7 +417,7 @@ ALTER SEQUENCE public.user_tokens_id_seq OWNED BY public.user_tokens.id;
 CREATE TABLE public.users (
     users_id integer NOT NULL,
     username character varying(30),
-    phone_number integer,
+    phone_number character varying(15),
     email character varying(50),
     password character varying(100),
     created_at timestamp with time zone NOT NULL,

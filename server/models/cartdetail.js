@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class UserToken extends Model {
+  class CartDetail extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  UserToken.init(
+  CartDetail.init(
     {
       id: {
         allowNull: false,
@@ -19,34 +19,36 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER,
       },
-      user_id: {
+      cart_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
       },
-      device_name: {
-        type: DataTypes.STRING(100),
+      product_id: {
+        type: DataTypes.INTEGER,
       },
-      refresh_token: {
-        type: DataTypes.STRING(255),
+      image_product: {
+        type: DataTypes.TEXT,
       },
-      otp: {
-        type: DataTypes.STRING(255),
+      product_name: {
+        type: DataTypes.TEXT,
       },
-      expired_otp: {
-        type: DataTypes.DATE,
+      product_price: {
+        type: DataTypes.STRING,
       },
-      status: {
+      quantity: {
+        type: DataTypes.INTEGER,
+      },
+      is_selected: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
     },
     {
       sequelize,
-      modelName: "UserToken",
-      tableName: "user_tokens",
+      modelName: "CartDetail",
+      tableName: "cart_detail",
       createdAt: "created_at",
       updatedAt: "updated_at",
     }
   );
-  return UserToken;
+  return CartDetail;
 };
