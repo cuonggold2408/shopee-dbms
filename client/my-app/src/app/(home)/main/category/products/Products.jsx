@@ -117,7 +117,6 @@ export default function Products() {
       <div
         style={{
           padding: "10px",
-
         }}
         className="flex"
       >
