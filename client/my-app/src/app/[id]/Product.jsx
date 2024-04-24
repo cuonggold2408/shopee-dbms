@@ -35,9 +35,9 @@ export default function Product({ id }) {
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState([]);
   const [selectedClassify, setSelectedClassify] = useState([]);
-  
+
   const [evaluates, setEvaluates] = useState([]);
-  
+
   const [productToCart, setProductToCart] = useState();
 
   const router = useRouter();
@@ -255,8 +255,8 @@ export default function Product({ id }) {
                             onMouseOver={() =>
                               classifyIndex === 0
                                 ? handleColorHover(
-                                    classify?.ProductImages[0]?.image_link
-                                  )
+                                  classify?.ProductImages[0]?.image_link
+                                )
                                 : null
                             }
                           >
