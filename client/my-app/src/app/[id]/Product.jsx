@@ -16,10 +16,10 @@ import { client } from "../helpers/fetch_api/client";
 import Loading from "../Loading/Loading";
 import showToast from "../helpers/Toastify";
 import { useRouter } from "next/navigation";
+import { getToken } from "../actions/gettoken.action";
 
 // Hàm để định dạng số tiền
 function formatCurrency(value) {
-  console.log(value);
   return value
     .toLocaleString("vi-VN", {
       maximumFractionDigits: 0, // Không hiển thị phần thập phân
@@ -33,9 +33,9 @@ export default function Product({ id }) {
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState([]);
   const [selectedClassify, setSelectedClassify] = useState([]);
+  const [productToCart, setProductToCart] = useState();
 
   const router = useRouter();
-
 
   const increaseQuantity = () => {
     setQuantity(quantity + 1);
@@ -47,21 +47,25 @@ export default function Product({ id }) {
   };
 
   const handleColorHover = (imageLink) => {
-    console.log(imageLink);
     setMainImage(imageLink);
   };
   const handleClassifyClick = (categoryIndex, optionIndex) => {
-    setSelectedClassify(prev => {
+    setSelectedClassify((prev) => {
       const newSelected = [...prev];
-      const existingIndex = newSelected.findIndex(item => item.category === categoryIndex && item.option === optionIndex);
+      const existingIndex = newSelected.findIndex(
+        (item) => item.category === categoryIndex && item.option === optionIndex
+      );
       if (existingIndex !== -1) {
-
         newSelected.splice(existingIndex, 1);
       } else {
-
-        const categoryIndexInSelected = newSelected.findIndex(item => item.category === categoryIndex);
+        const categoryIndexInSelected = newSelected.findIndex(
+          (item) => item.category === categoryIndex
+        );
         if (categoryIndexInSelected !== -1) {
-          newSelected[categoryIndexInSelected] = { category: categoryIndex, option: optionIndex };
+          newSelected[categoryIndexInSelected] = {
+            category: categoryIndex,
+            option: optionIndex,
+          };
         } else {
           newSelected.push({ category: categoryIndex, option: optionIndex });
         }
@@ -70,6 +74,25 @@ export default function Product({ id }) {
     });
   };
 
+  const handleAddToCart = async () => {
+    const token = await getToken();
+    console.log(token);
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const response = await client.post("/auth/products/cart", productToCart);
+      if (!response.data.status === 201) {
+        showToast("error", response.data.message);
+      }
+      showToast("success", response.data.message);
+      window.location.reload();
+    } catch (e) {
+      console.log(e);
+      showToast("error", "Có lỗi xảy ra");
+    }
+  };
 
   useEffect(() => {
     async function getProductById() {
@@ -80,11 +103,21 @@ export default function Product({ id }) {
           showToast("error", response.data.message);
         }
         const data = response.data.data;
-        console.log(data);
         setMainImage(
           data.ProductClassifies[0].ClassifyOptions[0].ProductImages[0]
             .image_link
         );
+        const dataToken = await getToken();
+        setProductToCart({
+          users_id: dataToken.userId,
+          product_id: id,
+          image_product:
+            data.ProductClassifies[0].ClassifyOptions[0].ProductImages[0]
+              .image_link,
+          product_name: data.product_name,
+          product_price: data.price,
+        });
+
         setProduct(data);
         setIsLoading(false);
       } catch (e) {
@@ -95,7 +128,6 @@ export default function Product({ id }) {
     }
     getProductById();
   }, []);
-  console.log(product);
 
   return (
     <Fragment>
@@ -172,54 +204,63 @@ export default function Product({ id }) {
                   Giảm
                 </div>
               </div>
-              {
-                product?.ProductClassifies?.map((item, classifyIndex) => (
-                  <Fragment key={classifyIndex}>
-                    <div className={clsx("flex mt-5", style.classify__product)}>
-                      <h3 className={style.title__item}>
-                        {item.classify_name}
-                      </h3>
-                      <ul
-                        style={{
-                          width: "80%",
-                        }}
-                        className="flex items-center flex-wrap gap-2"
-                      >
-                        {item.ClassifyOptions.map((classify, optionIndex) => (
-                          <li
-                            key={optionIndex}
-                            className={clsx(
-                              "flex items-center gap-2 flex-wrap",
+              {product?.ProductClassifies?.map((item, classifyIndex) => (
+                <Fragment key={classifyIndex}>
+                  <div className={clsx("flex mt-5", style.classify__product)}>
+                    <h3 className={style.title__item}>{item.classify_name}</h3>
+                    <ul
+                      style={{
+                        width: "80%",
+                      }}
+                      className="flex items-center flex-wrap gap-2"
+                    >
+                      {item.ClassifyOptions.map((classify, optionIndex) => (
+                        <li
+                          key={optionIndex}
+                          className={clsx(
+                            "flex items-center gap-2 flex-wrap",
 
-                              { [style.selected]: selectedClassify.some(item => item.category === classifyIndex && item.option === optionIndex) }
-                            )}
+                            {
+                              [style.selected]: selectedClassify.some(
+                                (item) =>
+                                  item.category === classifyIndex &&
+                                  item.option === optionIndex
+                              ),
+                            }
+                          )}
+                        >
+                          <button
+                            className={style.classify__item}
+                            onClick={() =>
+                              handleClassifyClick(classifyIndex, optionIndex)
+                            }
+                            onMouseOver={() =>
+                              classifyIndex === 0
+                                ? handleColorHover(
+                                    classify?.ProductImages[0]?.image_link
+                                  )
+                                : null
+                            }
                           >
-                            <button
-                              className={style.classify__item}
-                              onClick={() => handleClassifyClick(classifyIndex, optionIndex)}
-                              onMouseOver={() => classifyIndex === 0 ? handleColorHover(classify?.ProductImages[0]?.image_link) : null}
-                            >
-                              {item.classify_name !== "size" ? (
-                                <Image
-                                  src={classify?.ProductImages[0]?.image_link}
-                                  alt={classify?.option_name}
-                                  className={style["icon-product"]}
-                                  width={24}
-                                  height={24}
-                                />
-                              ) : (
-                                ""
-                              )}
-                              <span>{classify.option_name}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </Fragment>
-                ))
-
-              }
+                            {item.classify_name !== "size" ? (
+                              <Image
+                                src={classify?.ProductImages[0]?.image_link}
+                                alt={classify?.option_name}
+                                className={style["icon-product"]}
+                                width={24}
+                                height={24}
+                              />
+                            ) : (
+                              ""
+                            )}
+                            <span>{classify.option_name}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Fragment>
+              ))}
               <div className="flex mt-5 items-center">
                 <h3 className={style.title__item}>Số lượng</h3>
                 <div className="flex items-center justify-center mr-4">
@@ -243,12 +284,15 @@ export default function Product({ id }) {
                 </div>
 
                 <div className={style.quantity__stock}>
-                  {product.quantity_in_stock > 0 ? product.quantity_in_stock : "Sản phẩm đã hết hàng"} sản phẩm có sẵn
+                  {product.quantity_in_stock > 0
+                    ? product.quantity_in_stock
+                    : "Sản phẩm đã hết hàng"}{" "}
+                  sản phẩm có sẵn
                 </div>
               </div>
 
               <div className="flex items-center mt-5 gap-5">
-                <button className={style.btn__add}>
+                <button onClick={handleAddToCart} className={style.btn__add}>
                   <FontAwesomeIcon
                     icon={faCartPlus}
                     width={20}
@@ -263,29 +307,29 @@ export default function Product({ id }) {
                 <button className={style.btn__buy}>Mua ngay</button>
               </div>
             </div>
-            <div>
-            </div>
+            <div></div>
           </div>
           <div className="flex flex-col bg-white mt-10 px-5 py-5">
-            <div style={
-              {
+            <div
+              style={{
                 marginBottom: "10px",
                 fontSize: "20px",
                 fontWeight: "500",
                 borderBottom: "1px solid #f5f5f5",
-                padding: "2px 0"
-              }
-            }>Mô tả sản phẩm</div>
+                padding: "2px 0",
+              }}
+            >
+              Mô tả sản phẩm
+            </div>
             <div
               dangerouslySetInnerHTML={{
-                __html: (product.description || '').replace(/\n/g, '<br />')
+                __html: (product.description || "").replace(/\n/g, "<br />"),
               }}
             />
           </div>
-
         </div>
       </div>
       <Footer />
-    </Fragment >
+    </Fragment>
   );
 }
