@@ -53,11 +53,11 @@ router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
 
 
 // api for mongoose
-router.get('/v1/products/get/all/evaluate', productsControllerMongo.getAllEvaluated);
-router.get('/v1/products/get/one/evaluate/:id', productsControllerMongo.getOneEvaluated);
-router.post('/v1/products/post/one/new/evaluate/:id', productsControllerMongo.pushOneEvaluate);
-router.put('/v1/products/update/one/evaluated/:id', productsControllerMongo.updateOneEvaluated);
-router.delete('/v1/products/delete/one/evaluated/:id', productsControllerMongo.deleteOneEvaluated);
+router.get('/v1/products/get/all/evaluate/:user_id', productsControllerMongo.getAllEvaluated);
+router.get('/v1/products/get/one/evaluate/:user_id/:id', productsControllerMongo.getOneEvaluated);
+router.post('/v1/products/post/one/new/evaluate/:user_id/:id', productsControllerMongo.pushOneEvaluate);
+router.put('/v1/products/update/one/evaluated/:user_id/:id', productsControllerMongo.updateOneEvaluated);
+router.delete('/v1/products/delete/one/evaluated/:user_id/:id', productsControllerMongo.deleteOneEvaluated);
 
 router.get('/v1/testinsert', productsControllerMongo.testInsert);
 
