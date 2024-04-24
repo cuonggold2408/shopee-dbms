@@ -14,6 +14,7 @@ const ObjectId = mongoose.ObjectId;
 
 const evaluated = new Schema({
     product_id : {type: Number},
+    user_id : {type: Number},
     commented: {type: String},
     voted: {type: Number, default: 0},
     createdAt: {type: Date, default: new Date},
