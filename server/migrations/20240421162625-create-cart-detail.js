@@ -27,6 +27,10 @@ module.exports = {
       quantity: {
         type: Sequelize.INTEGER,
       },
+      classify: {
+        type: Sequelize.TEXT,
+      },
+
       is_selected: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,

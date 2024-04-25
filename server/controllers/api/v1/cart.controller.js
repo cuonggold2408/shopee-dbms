@@ -6,7 +6,6 @@ module.exports = {
     try {
       const id = req.params.id;
       const user = await User.findByPk(id);
-
       if (!user) {
         return errorResponse(res, 404, "Người dùng không tồn tại");
       }
@@ -31,7 +30,9 @@ module.exports = {
         product_id,
         image_product,
         product_name,
+        quantity,
         product_price,
+        classify,
       } = req.body;
 
       console.log(req.body);
@@ -41,7 +42,9 @@ module.exports = {
         !product_id ||
         !image_product ||
         !product_name ||
-        !product_price
+        !quantity ||
+        !product_price ||
+        !classify
       ) {
         return errorResponse(res, 400, "Thiếu thông tin");
       }
@@ -50,7 +53,9 @@ module.exports = {
         product_id: product_id,
         image_product: image_product,
         product_name: product_name,
+        quantity: quantity,
         product_price: product_price,
+        classify: classify,
       });
       return successResponse(res, 201, "Thêm sản phẩm vào giỏ hàng thành công");
     } catch (e) {
