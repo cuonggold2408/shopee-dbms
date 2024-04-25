@@ -1,0 +1,143 @@
+.main {
+    padding-top: 30px;
+    background: #F5F5F5;
+    padding-bottom: 30px;
+}
+
+.main .container {
+
+    width: 80vw;
+    margin: 0 auto;
+    height: auto;
+
+}
+
+.main .container .name__user {
+    font-weight: 600;
+}
+
+.main .container .address .btn__change {
+    color: #4080EE;
+    margin-left: 20px;
+}
+
+.main .container .list__product .title__option {
+    color: #bbb;
+    font-size: 14px;
+
+}
+
+.product__item {
+    overflow: hidden;
+    flex: 4;
+    color: #000;
+    text-align: left;
+}
+
+.price__one,
+.quantity {
+    text-align: center;
+    flex: 1;
+
+}
+
+.price__total {
+    text-align: right;
+    flex: 2;
+}
+
+.product__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.payment {
+    margin-top: 20px;
+    background: #fffefb;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
+    border-top: 1px solid #f1f0ed;
+    padding: 15px 0px;
+    display: grid;
+    grid-template-columns: 1fr -webkit-max-content -webkit-max-content;
+    grid-template-columns: 1fr max-content max-content;
+    grid-template-rows: auto;
+    grid-column-gap: 10px;
+    border-bottom: 1px dashed rgba(0, 0, 0, .09);
+}
+
+
+.text-coin-1 {
+    color: rgba(0, 0, 0, .54);
+    grid-column-start: 2;
+    grid-column-end: 3;
+    -ms-grid-column-span: 1;
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+}
+
+.bwwaGp {
+    padding: 0 25px 0 10px;
+    height: 40px;
+    min-width: 100px;
+    grid-column-start: 3;
+    grid-column-end: 4;
+    -ms-grid-column-span: 1;
+    justify-content: flex-end;
+
+}
+
+
+.vourcher__ship {
+    grid-column-end: 4;
+    grid-column-start: 3;
+    height: 40px;
+    min-width: 100px;
+    padding: 0 25px 0 10px;
+    -ms-grid-column-span: 1;
+    justify-content: flex-end;
+}
+
+.total-coins {
+    grid-row-start: 29;
+    grid-row-end: 30;
+}
+
+.payment__item-total {
+
+    grid-row-start: 29;
+    grid-row-end: 30;
+    height: 50px;
+    font-size: 28px;
+    font-weight: 500;
+    color: #ee4d2d;
+    padding: 0 25px 0 10px;
+    height: 40px;
+    min-width: 100px;
+    grid-column-start: 3;
+    grid-column-end: 4;
+    -ms-grid-column-span: 1;
+    justify-content: flex-end;
+}
+
+.select-product {
+    padding: 25px;
+    background-color: #fff;
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.select__product-item {
+
+    font-size: 16px;
+    color: #fff;
+    padding: 10px 80px;
+    background-color: #ee4d2d;
+    border: 0;
+    border-radius: 2px;
+}

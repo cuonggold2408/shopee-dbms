@@ -447,7 +447,7 @@ export default function Product({ id }) {
               </div>
             </div>
 
-            {evaluates.map((evaluate, index) => (
+            {evaluates?.map((evaluate, index) => (
               <div key={index} className={clsx(style.user__vote, 'p-5')}>
                 <div className="p-2 flex">
                   <div className="mr-3">
