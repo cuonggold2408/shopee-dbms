@@ -41,43 +41,117 @@ export default function Product({ id }) {
   const [productToCart, setProductToCart] = useState();
 
   const router = useRouter();
-
+  const classify = [];
   const increaseQuantity = () => {
-    setQuantity(quantity + 1);
+    const newQuantity = quantity + 1;
+    setQuantity(newQuantity);
+    console.log(newQuantity);
+    setProductToCart((prev) => {
+      console.log(prev);
+      return ({ ...prev, quantity: newQuantity })
+    });
   };
+
+
   const decreaseQuantity = () => {
     if (quantity > 1) {
-      setQuantity(quantity - 1);
+      const newQuantity = quantity - 1;
+      console.log(newQuantity);
+      setQuantity(newQuantity);
+      setProductToCart((prev) => {
+        console.log(prev);
+        return { ...prev, quantity: newQuantity };
+      });
     }
   };
+
 
   const handleColorHover = (imageLink) => {
     setMainImage(imageLink);
   };
+
+  // const handleClassifyClick = (categoryIndex, optionIndex) => {
+  //   setSelectedClassify((prev) => {
+  //     const newSelected = [...prev];
+  //     const existingIndex = newSelected.findIndex(
+  //       (item) => item.category === categoryIndex && item.option === optionIndex
+  //     );
+  //     if (existingIndex !== -1) {
+  //       newSelected.splice(existingIndex, 1);
+  //     } else {
+  //       const categoryIndexInSelected = newSelected.findIndex(
+  //         (item) => item.category === categoryIndex
+  //       );
+  //       if (categoryIndexInSelected !== -1) {
+  //         newSelected[categoryIndexInSelected] = {
+  //           category: categoryIndex,
+  //           option: optionIndex,
+  //         };
+  //       } else {
+  //         newSelected.push({ category: categoryIndex, option: optionIndex });
+  //       }
+  //     }
+
+  //     // Retrieve and update the main image and selected options
+  //     if (
+  //       product &&
+  //       product.ProductClassifies &&
+  //       product.ProductClassifies[categoryIndex] &&
+  //       product.ProductClassifies[categoryIndex].ClassifyOptions &&
+  //       product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex] &&
+  //       product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].ProductImages &&
+  //       product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].ProductImages[0]
+  //     ) {
+  //       const newMainImage = product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].ProductImages[0].image_link;
+  //       setMainImage(newMainImage);
+  //       setProductToCart((prev) => {
+  //         const newClassify = prev.classify ? { ...prev.classify } : {};
+  //         newClassify[product.ProductClassifies[categoryIndex].classify_name] = product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].option_name;
+  //         return {
+  //           ...prev,
+  //           image_product: newMainImage,
+  //           classify: newClassify
+  //         };
+  //       });
+  //     }
+
+  //     return newSelected;
+  //   });
+
+  // };
+
   const handleClassifyClick = (categoryIndex, optionIndex) => {
     setSelectedClassify((prev) => {
-      const newSelected = [...prev];
-      const existingIndex = newSelected.findIndex(
-        (item) => item.category === categoryIndex && item.option === optionIndex
-      );
-      if (existingIndex !== -1) {
-        newSelected.splice(existingIndex, 1);
-      } else {
-        const categoryIndexInSelected = newSelected.findIndex(
-          (item) => item.category === categoryIndex
-        );
-        if (categoryIndexInSelected !== -1) {
-          newSelected[categoryIndexInSelected] = {
-            category: categoryIndex,
-            option: optionIndex,
+      const newSelected = prev.filter(item => item.category !== categoryIndex);
+      newSelected.push({ category: categoryIndex, option: optionIndex });
+
+      const selectedOption = product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex];
+      console.log(selectedOption);
+      if (selectedOption.ProductImages && selectedOption.ProductImages.length > 0) {
+        const newMainImage = selectedOption.ProductImages[0].image_link;
+        setMainImage(newMainImage);
+        setProductToCart((prev) => {
+          console.log(prev);
+          return {
+            ...prev,
+            image_product: newMainImage,
           };
-        } else {
-          newSelected.push({ category: categoryIndex, option: optionIndex });
-        }
+        });
       }
+
+      setProductToCart((prev) => {
+        console.log(prev);
+        return {
+          ...prev,
+          classify: newSelected.map(item => product.ProductClassifies[item.category].ClassifyOptions[item.option].option_name).join(', '),
+        };
+      });
+
       return newSelected;
     });
   };
+
+
 
   const handleAddToCart = async () => {
     const token = await getToken();
@@ -120,7 +194,9 @@ export default function Product({ id }) {
             data.ProductClassifies[0].ClassifyOptions[0].ProductImages[0]
               .image_link,
           product_name: data.product_name,
+          quantity: 1,
           product_price: data.price,
+          classify: classify.join(', '),
         });
 
         setProduct(data);

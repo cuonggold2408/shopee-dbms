@@ -25,15 +25,24 @@ export default function Cart() {
   const [quantity, setQuantity] = useState(1);
   const [cart, setCart] = useState([]);
 
-  const increaseQuantity = () => {
-    setQuantity(quantity + 1);
-  };
-  const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
-    }
+
+  const increaseQuantity = (index) => {
+    setCart((prevCart) => {
+      const newCart = [...prevCart];
+      newCart[index].quantity += 1;
+      return newCart;
+    });
   };
 
+  const decreaseQuantity = (index) => {
+    setCart((prevCart) => {
+      const newCart = [...prevCart];
+      if (newCart[index].quantity > 1) {
+        newCart[index].quantity -= 1;
+      }
+      return newCart;
+    });
+  };
   useEffect(() => {
     async function fetchProductToCart() {
       try {
@@ -42,7 +51,6 @@ export default function Cart() {
           `/auth/products/cart/${dataToken.userId}`
         );
         console.log("response: ", response.data);
-
         setCart(response.data.data.cart);
       } catch (e) {
         console.log(e);
@@ -98,6 +106,7 @@ export default function Cart() {
             <div className={clsx(styles.list__product)}>
               {/* Đổ product */}
               {cart.map((product, index) => (
+                console.log("product: ", product),
                 <div
                   className={clsx(
                     styles.product__item,
@@ -124,10 +133,12 @@ export default function Cart() {
                       }}
                       className="flex flex-col  justify-center"
                     >
-                      <h3>Phân Loại Hàng: </h3>
-                      <h4>Đen LM01,40-41 (Tăng 1 size)</h4>
+                      <h3>Phân loại hàng: </h3>
+                      <h4 style={{
+                        textTransform: "Capitalize",
+                      }}>{product?.classify}</h4>
                       {/* Test */}
-                      <h4>Size : 35</h4>
+
                     </div>
                   </div>
                   <div
@@ -150,18 +161,18 @@ export default function Cart() {
                       <div className="flex items-center justify-center ">
                         <button
                           className={styles.btn__quantity}
-                          onClick={decreaseQuantity}
+                          onClick={() => decreaseQuantity(index)}
                         >
                           -
                         </button>
                         <input
                           type="text"
-                          value={quantity}
+                          value={product?.quantity}
                           className={styles.quantity}
                         />
                         <button
                           className={styles.btn__quantity}
-                          onClick={increaseQuantity}
+                          onClick={() => increaseQuantity(index)}
                         >
                           +
                         </button>

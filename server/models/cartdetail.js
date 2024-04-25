@@ -37,6 +37,9 @@ module.exports = (sequelize, DataTypes) => {
       quantity: {
         type: DataTypes.INTEGER,
       },
+      classify: {
+        type: DataTypes.TEXT,
+      },
       is_selected: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
