@@ -40,9 +40,12 @@ module.exports = (sequelize, DataTypes) => {
       classify: {
         type: DataTypes.TEXT,
       },
+      total_price: {
+        type: DataTypes.STRING,
+      },
       is_selected: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
       },
     },
     {

@@ -15,7 +15,7 @@ import Footer from "../footer/Footer";
 import { client } from "../helpers/fetch_api/client";
 import Loading from "../Loading/Loading";
 import showToast from "../helpers/Toastify";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import Admin from "../../../public/image/admin2.jpg";
 import { getToken } from "../actions/gettoken.action";
@@ -40,6 +40,8 @@ export default function Product({ id }) {
 
   const [productToCart, setProductToCart] = useState();
 
+  const usePathName = usePathname();
+
   const router = useRouter();
   const classify = [];
   const increaseQuantity = () => {
@@ -48,10 +50,12 @@ export default function Product({ id }) {
     console.log(newQuantity);
     setProductToCart((prev) => {
       console.log(prev);
-      return ({ ...prev, quantity: newQuantity })
+      return {
+        ...prev,
+        quantity: newQuantity,
+      };
     });
   };
-
 
   const decreaseQuantity = () => {
     if (quantity > 1) {
@@ -60,74 +64,32 @@ export default function Product({ id }) {
       setQuantity(newQuantity);
       setProductToCart((prev) => {
         console.log(prev);
-        return { ...prev, quantity: newQuantity };
+        return {
+          ...prev,
+          quantity: newQuantity,
+        };
       });
     }
   };
-
 
   const handleColorHover = (imageLink) => {
     setMainImage(imageLink);
   };
 
-  // const handleClassifyClick = (categoryIndex, optionIndex) => {
-  //   setSelectedClassify((prev) => {
-  //     const newSelected = [...prev];
-  //     const existingIndex = newSelected.findIndex(
-  //       (item) => item.category === categoryIndex && item.option === optionIndex
-  //     );
-  //     if (existingIndex !== -1) {
-  //       newSelected.splice(existingIndex, 1);
-  //     } else {
-  //       const categoryIndexInSelected = newSelected.findIndex(
-  //         (item) => item.category === categoryIndex
-  //       );
-  //       if (categoryIndexInSelected !== -1) {
-  //         newSelected[categoryIndexInSelected] = {
-  //           category: categoryIndex,
-  //           option: optionIndex,
-  //         };
-  //       } else {
-  //         newSelected.push({ category: categoryIndex, option: optionIndex });
-  //       }
-  //     }
-
-  //     // Retrieve and update the main image and selected options
-  //     if (
-  //       product &&
-  //       product.ProductClassifies &&
-  //       product.ProductClassifies[categoryIndex] &&
-  //       product.ProductClassifies[categoryIndex].ClassifyOptions &&
-  //       product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex] &&
-  //       product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].ProductImages &&
-  //       product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].ProductImages[0]
-  //     ) {
-  //       const newMainImage = product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].ProductImages[0].image_link;
-  //       setMainImage(newMainImage);
-  //       setProductToCart((prev) => {
-  //         const newClassify = prev.classify ? { ...prev.classify } : {};
-  //         newClassify[product.ProductClassifies[categoryIndex].classify_name] = product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex].option_name;
-  //         return {
-  //           ...prev,
-  //           image_product: newMainImage,
-  //           classify: newClassify
-  //         };
-  //       });
-  //     }
-
-  //     return newSelected;
-  //   });
-
-  // };
-
   const handleClassifyClick = (categoryIndex, optionIndex) => {
     setSelectedClassify((prev) => {
-      const newSelected = prev.filter(item => item.category !== categoryIndex);
+      const newSelected = prev.filter(
+        (item) => item.category !== categoryIndex
+      );
       newSelected.push({ category: categoryIndex, option: optionIndex });
 
-      const selectedOption = product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex];
+      const selectedOption =
+        product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex];
       console.log(selectedOption);
-      if (selectedOption.ProductImages && selectedOption.ProductImages.length > 0) {
+      if (
+        selectedOption.ProductImages &&
+        selectedOption.ProductImages.length > 0
+      ) {
         const newMainImage = selectedOption.ProductImages[0].image_link;
         setMainImage(newMainImage);
         setProductToCart((prev) => {
@@ -143,15 +105,20 @@ export default function Product({ id }) {
         console.log(prev);
         return {
           ...prev,
-          classify: newSelected.map(item => product.ProductClassifies[item.category].ClassifyOptions[item.option].option_name).join(', '),
+          classify: newSelected
+            .map(
+              (item) =>
+                product.ProductClassifies[item.category].ClassifyOptions[
+                  item.option
+                ].option_name
+            )
+            .join(", "),
         };
       });
 
       return newSelected;
     });
   };
-
-
 
   const handleAddToCart = async () => {
     const token = await getToken();
@@ -186,6 +153,9 @@ export default function Product({ id }) {
           data.ProductClassifies[0].ClassifyOptions[0].ProductImages[0]
             .image_link
         );
+        console.log("data: ", data);
+        setProduct(data);
+
         const dataToken = await getToken();
         setProductToCart({
           users_id: dataToken.userId,
@@ -196,10 +166,10 @@ export default function Product({ id }) {
           product_name: data.product_name,
           quantity: 1,
           product_price: data.price,
-          classify: classify.join(', '),
+          classify: classify.join(", "),
+          total_price: data.price,
         });
 
-        setProduct(data);
         setIsLoading(false);
       } catch (e) {
         console.log(e);
@@ -215,8 +185,7 @@ export default function Product({ id }) {
         setEvaluates(response.data.data);
       } catch (e) {
         console.log(e);
-      }
-      finally {
+      } finally {
         setIsLoading(false);
       }
     }
@@ -331,8 +300,8 @@ export default function Product({ id }) {
                             onMouseOver={() =>
                               classifyIndex === 0
                                 ? handleColorHover(
-                                  classify?.ProductImages[0]?.image_link
-                                )
+                                    classify?.ProductImages[0]?.image_link
+                                  )
                                 : null
                             }
                           >
@@ -422,56 +391,122 @@ export default function Product({ id }) {
             />
           </div>
 
-          <div className={clsx("bg-white mt-5 p-5")} >
-            <h2 style={{
-              textTransform: "uppercase",
-              fontWeight: "500",
-            }} className="mb-4">Đánh giá sản phẩm</h2>
-            <div className="flex items-center" style={{
-              color: "#ff4d2d",
-              background: "rgb(255, 251, 248)",
-            }}>
+          <div className={clsx("bg-white mt-5 p-5")}>
+            <h2
+              style={{
+                textTransform: "uppercase",
+                fontWeight: "500",
+              }}
+              className="mb-4"
+            >
+              Đánh giá sản phẩm
+            </h2>
+            <div
+              className="flex items-center"
+              style={{
+                color: "#ff4d2d",
+                background: "rgb(255, 251, 248)",
+              }}
+            >
               <div className="flex flex-col items-center">
                 <div className={clsx(style.box__vote)}>
                   <div>
                     <span className={style.voting}>4.8</span>
-                    trên 5</div>
+                    trên 5
+                  </div>
                   <div className="flex gap-1">
-                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
-                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
-                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
-                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
-                    <FontAwesomeIcon icon={faStar} width={20} height={20} className={style.vote__icon} />
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      width={20}
+                      height={20}
+                      className={style.vote__icon}
+                    />
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      width={20}
+                      height={20}
+                      className={style.vote__icon}
+                    />
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      width={20}
+                      height={20}
+                      className={style.vote__icon}
+                    />
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      width={20}
+                      height={20}
+                      className={style.vote__icon}
+                    />
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      width={20}
+                      height={20}
+                      className={style.vote__icon}
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            {evaluates.map((evaluate, index) => (
-              <div key={index} className={clsx(style.user__vote, 'p-5')}>
+            {evaluates?.map((evaluate, index) => (
+              <div key={index} className={clsx(style.user__vote, "p-5")}>
                 <div className="p-2 flex">
                   <div className="mr-3">
-                    <Image src={Admin} alt="user" width={40} height={40} className={style.avt__user} />
+                    <Image
+                      src={Admin}
+                      alt="user"
+                      width={40}
+                      height={40}
+                      className={style.avt__user}
+                    />
                   </div>
                   <div className="flex flex-col gap-1">
                     <h3>bachnguyen04</h3>
                     <div className="flex gap-1">
-                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
-                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
-                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
-                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
-                      <FontAwesomeIcon icon={faStar} width={15} height={15} className={style.vote__icon} />
+                      <FontAwesomeIcon
+                        icon={faStar}
+                        width={15}
+                        height={15}
+                        className={style.vote__icon}
+                      />
+                      <FontAwesomeIcon
+                        icon={faStar}
+                        width={15}
+                        height={15}
+                        className={style.vote__icon}
+                      />
+                      <FontAwesomeIcon
+                        icon={faStar}
+                        width={15}
+                        height={15}
+                        className={style.vote__icon}
+                      />
+                      <FontAwesomeIcon
+                        icon={faStar}
+                        width={15}
+                        height={15}
+                        className={style.vote__icon}
+                      />
+                      <FontAwesomeIcon
+                        icon={faStar}
+                        width={15}
+                        height={15}
+                        className={style.vote__icon}
+                      />
                     </div>
-                    <div className="flex gap-3" style={{
-                      color: "rgb(200,200,200)",
-                      fontSize: "13px"
-                    }}>
+                    <div
+                      className="flex gap-3"
+                      style={{
+                        color: "rgb(200,200,200)",
+                        fontSize: "13px",
+                      }}
+                    >
                       <div>{evaluate.createdAt}</div>
                       <div>Phân loại hàng: Trắng + Xám,Thùng 300 cái</div>
                     </div>
-                    <div className={style.cmt}>
-                      {evaluate.commented}
-                    </div>
+                    <div className={style.cmt}>{evaluate.commented}</div>
                   </div>
                 </div>
               </div>

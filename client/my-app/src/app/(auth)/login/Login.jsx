@@ -178,7 +178,7 @@ export default function Login() {
             className="flex  items-baseline gap-3"
           >
             <Link
-              href="/login"
+              href="/"
               style={{ width: "123px", height: "30px" }}
               className="inline-block"
             >

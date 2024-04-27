@@ -39,7 +39,10 @@ router.get("/v1/products/:id", productsController.getProductById);
 
 router.get("/v1/products/category", productsController.showCategories);
 
-router.get("/v1/auth/users/get/address/:id", addressController.getAllAddressesByUserId);
+router.get(
+  "/v1/auth/users/get/address/:id",
+  addressController.getAllAddressesByUserId
+);
 
 router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
 
@@ -47,27 +50,51 @@ router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
 router.get("/v1/auth/users/cart", cartController.getUserCart);
 router.post("/v1/auth/products/cart", cartController.addProductToCart);
 router.get("/v1/auth/products/cart/:id", cartController.getProductToCart);
-
 router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
+router.delete(
+  "/v1/auth/products/cart/:id/:product_id/:classify",
+  cartController.deleteProductFromCart
+);
 
+router.post("/v1/products/cart", cartController.updateProductToCart);
 
+router.post(
+  "/v1/products/selected/cart",
+  cartController.addSelectedProductToCart
+);
+
+router.post(
+  "/v1/products/selected-all/cart",
+  cartController.addSelectedProductToCartAll
+);
 
 // api for mongoose
-router.get('/v1/products/get/all/evaluate/:user_id', productsControllerMongo.getAllEvaluated);
-router.get('/v1/products/get/one/evaluate/:user_id/:id', productsControllerMongo.getOneEvaluated);
-router.post('/v1/products/post/one/new/evaluate/:user_id/:id', productsControllerMongo.pushOneEvaluate);
-router.put('/v1/products/update/one/evaluated/:user_id/:id', productsControllerMongo.updateOneEvaluated);
-router.delete('/v1/products/delete/one/evaluated/:user_id/:id', productsControllerMongo.deleteOneEvaluated);
+router.get(
+  "/v1/products/get/all/evaluate/:user_id",
+  productsControllerMongo.getAllEvaluated
+);
+router.get(
+  "/v1/products/get/one/evaluate/:user_id/:id",
+  productsControllerMongo.getOneEvaluated
+);
+router.post(
+  "/v1/products/post/one/new/evaluate/:user_id/:id",
+  productsControllerMongo.pushOneEvaluate
+);
+router.put(
+  "/v1/products/update/one/evaluated/:user_id/:id",
+  productsControllerMongo.updateOneEvaluated
+);
+router.delete(
+  "/v1/products/delete/one/evaluated/:user_id/:id",
+  productsControllerMongo.deleteOneEvaluated
+);
 
-router.get('/v1/testinsert', productsControllerMongo.testInsert);
-
-
-
-
+router.get("/v1/testinsert", productsControllerMongo.testInsert);
 
 // router.get('/testinsert', (req, res) => {
 //   const sp = new Evaluates({
-//     product_id: 6, 
+//     product_id: 6,
 //     commented: "xin chào2",
 //   });
 
@@ -86,7 +113,7 @@ router.get('/v1/testinsert', productsControllerMongo.testInsert);
 // });
 // insert data
 // const sp = new evaluate({
-//   product_id: 2, 
+//   product_id: 2,
 //   commented: "hi",
 // });
 
