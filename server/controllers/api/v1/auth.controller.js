@@ -14,28 +14,6 @@ const { Op, where } = require("sequelize");
 
 module.exports = {
   register: async (req, res) => {
-    // try {
-    //   const { email, password, username, phone_number } = req.body;
-    //   if (!email || !password || !username || !phone_number) {
-    //     return errorResponse(res, 400, "Vui lòng nhập đầy đủ thông tin");
-    //   }
-    //   const user = await User.findOne({ where: { email } });
-    //   // console.log(user);
-    //   if (user) {
-    //     return errorResponse(res, 400, "Email đã tồn tại");
-    //   }
-    //   const hashPassword = bcrypt.hashSync(password, 10);
-    //   const createUser = await User.create({
-    //     email,
-    //     password: hashPassword,
-    //     username,
-    //     phone_number,
-    //   });
-    //   return successResponse(res, 201, "Tạo tài khoản thành công");
-    // } catch (e) {
-    //   console.log(e);
-    //   return errorResponse(res, 500, "Đã có lỗi xảy ra");
-    // }
     try {
       const userAgent = req.useragent;
       const userAgentInfo = userAgent.browser;
@@ -50,7 +28,6 @@ module.exports = {
       if (!emailRegex(email)) {
         return errorResponse(res, 400, "Email không hợp lệ");
       }
-      // console.log(email);
 
       const user = await User.findOne({ where: { email } });
       if (user) {
@@ -64,7 +41,6 @@ module.exports = {
         username,
         phone_number,
       });
-      console.log("createUser: ", createUser);
       await UserToken.create({
         user_id: createUser.users_id,
         device_name: userAgentInfo,
@@ -82,7 +58,6 @@ module.exports = {
       const userAgentInfo = userAgent.browser;
       const { email, password } = req.body;
 
-      // console.log(typeof userAgentInfo);
       if (!email || !password) {
         return errorResponse(res, 400, "Vui lòng nhập đầy đủ thông tin");
       }
@@ -100,7 +75,6 @@ module.exports = {
         );
       }
 
-      // console.log(user);
       const accessToken = createAccessToken({ userId: user.users_id });
       const refreshToken = createRefreshToken();
 
@@ -113,8 +87,6 @@ module.exports = {
         },
       });
 
-      // console.log(accessUserToRegister);
-
       // User đã đăng ký , token đã được update, đã biết ở trình duyệt nào
       const accessUser = await UserToken.findOne({
         where: {
@@ -125,7 +97,6 @@ module.exports = {
           },
         },
       });
-      // console.log(accessUser);
 
       if (accessUserToRegister) {
         // Nếu đã verify email thì update token
@@ -147,7 +118,6 @@ module.exports = {
             lowerCaseAlphabets: false,
           });
 
-          console.log(otp);
           await sendMail(
             email,
             "Xác minh tài khoản",
@@ -201,7 +171,6 @@ module.exports = {
             lowerCaseAlphabets: false,
           });
 
-          console.log(otp);
           await sendMail(
             email,
             "Xác minh tài khoản",

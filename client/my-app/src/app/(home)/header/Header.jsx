@@ -1,27 +1,22 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { Fragment } from "react";
 import clsx from "clsx";
 import style from "./header.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
-import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
-import { faGlobe } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "../../../../public/image/logo.png";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
-import testImg from "../../../../public/image/google-icon.jpg";
 import LanguageIcon from "@mui/icons-material/Language";
-import HelpIcon from "@mui/icons-material/Help";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/app/actions/gettoken.action";
 import { client } from "@/app/helpers/fetch_api/client";
+import Logout from "@/app/(auth)/logout/Logout";
+import Loading from "@/app/Loading/Loading";
 import { usePathname } from "next/navigation";
 import showToast from "@/app/helpers/Toastify";
 import ShopeeLogo from "../../../../public/image/logo.png";
@@ -38,34 +33,50 @@ function formatCurrency(value) {
 export default function Header() {
   const [cart, setCart] = useState([]);
   const [count, setCount] = useState(0);
+  const [name, setName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   console.log("pathname: ", pathname);
 
 
   useEffect(() => {
-    async function fetchProductToCart() {
-      const dataToken = await getToken();
+    async function fetchDataUser() {
       try {
-        const response = await client.get(
-          `/auth/products/cart/${dataToken.userId}`
-        );
-        console.log("response: ", response.data);
-        // if (!response.data.status !== 201) {
-        //   showToast("error", "Lỗi khi lấy giỏ hàng của người dùng");
-        //   return;
-        // }
-        setCart(response.data.data.cart);
-        setCount(response.data.data.count);
+        const dataToken = await getToken();
+        client.setToken(dataToken?.accessToken.value);
+        const response = await client.get("/auth/profile");
+        if (response.data.status === 200) {
+          setName(response.data.data.username);
+        }
       } catch (e) {
         console.log(e);
       }
     }
+    async function fetchProductToCart() {
+      try {
+        const dataToken = await getToken();
+        const response = await client.get(
+          `/auth/products/cart/${dataToken.userId}`
+        );
+        console.log("response: ", response.data);
+
+        setCart(response.data.data.cart);
+        setCount(response.data.data.count);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchDataUser();
     fetchProductToCart();
   }, []);
 
   return (
     <Fragment>
+      {isLoading && <Loading />}
       <header className={clsx(style.header)}>
         <div className={clsx()} >
           <div className={clsx(style.container, "flex justify-between items-center")}>
@@ -96,7 +107,11 @@ export default function Header() {
                 <LanguageIcon />
                 <span>Ngôn ngữ</span>
               </li>
-              <Link href="./login">Đăng nhập</Link>
+              {name ? (
+                <Logout name={name} />
+              ) : (
+                <Link href="./login">Đăng nhập</Link>
+              )}
             </ul>
           </div>
           {(pathname !== '/cart' && pathname !== '/checkout') ? (

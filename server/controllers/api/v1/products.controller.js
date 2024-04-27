@@ -90,8 +90,6 @@ module.exports = {
 
       if (Number.isInteger(+limit) && Number.isInteger(+page)) {
         const offset = (page - 1) * limit;
-        console.log("limit", limit);
-        console.log("page", page);
         options.limit = +limit;
         options.offset = offset;
       }
@@ -136,7 +134,6 @@ module.exports = {
       const id = req.params.id;
       const category = await Category.findByPk(id);
       const categoryProductline = await category.getProductLines();
-      // console.log(category);
       if (!id || !category) {
         return errorResponse(res, 404, "Không tìm thấy danh mục");
       } else {
