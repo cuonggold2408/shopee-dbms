@@ -27,9 +27,17 @@ module.exports = {
       quantity: {
         type: Sequelize.INTEGER,
       },
+      classify: {
+        type: Sequelize.TEXT,
+      },
+
+      total_price: {
+        type: Sequelize.STRING,
+      },
+
       is_selected: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
       },
       created_at: {
         allowNull: false,

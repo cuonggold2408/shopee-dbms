@@ -90,8 +90,6 @@ module.exports = {
 
       if (Number.isInteger(+limit) && Number.isInteger(+page)) {
         const offset = (page - 1) * limit;
-        console.log("limit", limit);
-        console.log("page", page);
         options.limit = +limit;
         options.offset = offset;
       }
@@ -136,7 +134,6 @@ module.exports = {
       const id = req.params.id;
       const category = await Category.findByPk(id);
       const categoryProductline = await category.getProductLines();
-      // console.log(category);
       if (!id || !category) {
         return errorResponse(res, 404, "Không tìm thấy danh mục");
       } else {
@@ -147,6 +144,28 @@ module.exports = {
       return errorResponse(res, 500, "Đã có lỗi xảy ra");
     }
   },
+  
+  getOneCategoryProducts: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const category = await Category.findByPk(id, { include: Productline }); // Include Productlines when fetching Category
+      if (!category) {
+        return errorResponse(res, 404, "Không tìm thấy danh mục");
+      }
+
+      let allProducts = [];
+      for (const productline of category.Productlines) {
+        const products = await productline.getProducts(); // Get products for each productline
+        allProducts = allProducts.concat(products); // Concatenate products
+      }
+
+      return successResponse(res, 200, "success", allProducts);
+    } catch (e) {
+      console.log(e);
+      return errorResponse(res, 500, "Đã có lỗi xảy ra");
+    }
+  },
+
   getProductById: async (req, res) => {
     try {
       const id = req.params.id;

@@ -31,15 +31,19 @@ router.post("/v1/auth/resend-otp", verifyController.resendOTP);
 
 router.get("/v1/products/category/:id", productsController.getOneCategory);
 
-router.get("/v1/products/category/:id", productsController.getOneCategory);
-
 router.get("/v1/products", productsController.getProducts);
-
-router.get("/v1/products/:id", productsController.getProductById);
 
 router.get("/v1/products/category", productsController.showCategories);
 
-router.get("/v1/auth/users/get/address/:id", addressController.getAllAddressesByUserId);
+router.get("/v1/products/:id", productsController.getProductById);
+
+router.get("/v1/category/show/products/:id", productsController.getOneCategoryProducts);
+
+
+router.get(
+  "/v1/auth/users/get/address/:id",
+  addressController.getAllAddressesByUserId
+);
 
 router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
 
@@ -47,9 +51,18 @@ router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
 router.get("/v1/auth/users/cart", cartController.getUserCart);
 router.post("/v1/auth/products/cart", cartController.addProductToCart);
 router.get("/v1/auth/products/cart/:id", cartController.getProductToCart);
-
 router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
+router.delete(
+  "/v1/auth/products/cart/:id/:product_id/:classify",
+  cartController.deleteProductFromCart
+);
 
+router.post("/v1/products/cart", cartController.updateProductToCart);
+
+router.post(
+  "/v1/products/selected/cart",
+  cartController.addSelectedProductToCart
+);
 
 
 // api for mongoose
@@ -77,11 +90,17 @@ router.get('/v1/user/get/all/commented/:id', productsControllerMongo.getAllComme
 
 
 
+router.post(
+  "/v1/products/selected-all/cart",
+  cartController.addSelectedProductToCartAll
+);
 
+
+router.get("/v1/testinsert", productsControllerMongo.testInsert);
 
 // router.get('/testinsert', (req, res) => {
 //   const sp = new Evaluates({
-//     product_id: 6, 
+//     product_id: 6,
 //     commented: "xin chào2",
 //   });
 
@@ -100,7 +119,7 @@ router.get('/v1/user/get/all/commented/:id', productsControllerMongo.getAllComme
 // });
 // insert data
 // const sp = new evaluate({
-//   product_id: 2, 
+//   product_id: 2,
 //   commented: "hi",
 // });
 

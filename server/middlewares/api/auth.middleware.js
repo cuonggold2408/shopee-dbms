@@ -4,7 +4,6 @@ const { decodeToken } = require("../../utils/jwt");
 
 module.exports = async (req, res, next) => {
   const accessToken = req.get("Authorization")?.split(" ").slice(1).join();
-
   try {
     if (accessToken) {
       const blacklist = await Blacklist.findOne({
@@ -18,14 +17,11 @@ module.exports = async (req, res, next) => {
     }
 
     const { userId, exp } = decodeToken(accessToken);
-    console.log("userId", userId);
     const user = await User.findByPk(userId, {
       attributes: {
         exclude: ["password"],
       },
     });
-
-    console.log("user", user);
 
     req.user = {
       ...user.dataValues,
