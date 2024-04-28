@@ -54,12 +54,26 @@ router.post("/v1/auth/users/cart/:id", cartController.getUserCart);
 
 // api for mongoose
 router.get('/v1/products/get/all/evaluate/:user_id', productsControllerMongo.getAllEvaluated);
+
 router.get('/v1/products/get/one/evaluate/:user_id/:id', productsControllerMongo.getOneEvaluated);
+
+// post 
 router.post('/v1/products/post/one/new/evaluate/:user_id/:id', productsControllerMongo.pushOneEvaluate);
+
 router.put('/v1/products/update/one/evaluated/:user_id/:id', productsControllerMongo.updateOneEvaluated);
 router.delete('/v1/products/delete/one/evaluated/:user_id/:id', productsControllerMongo.deleteOneEvaluated);
 
 router.get('/v1/testinsert', productsControllerMongo.testInsert);
+router.post('/v1/carts/post/one/carted/:user_id/:id', productsControllerMongo.pushOneCart);
+router.delete('/v1/carts/delete/one/carted/:user_id/:id', productsControllerMongo.deleteOneCart);
+
+// api for mongoose and mysql
+
+// get one commt ví dụ khi xm lịch sử mua hàng của mình
+router.get('/v1/user/get/one/:user_id/:id', productsControllerMongo.getOneDetailUser)
+
+// hin tất cả commnt của 1 sản phẩm 
+router.get('/v1/user/get/all/commented/:id', productsControllerMongo.getAllCommented)
 
 
 

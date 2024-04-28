@@ -1,6 +1,10 @@
 const { errorResponse, successResponse } = require("../../../utils/response");
 const evaluate = require("../../../modelMongo/evaluate");
-
+const test = require("../../../modelMongo/cart");
+const {
+    User,
+  } = require("../../../models/index");
+const { json } = require("sequelize");
 module.exports = {
     getAllEvaluated: async (req, res) => {
         const doc = await evaluate.find({
@@ -90,6 +94,108 @@ module.exports = {
             console.error("Error while inserting data:", err);
             res.status(500).send("Đã xảy ra lỗi khi thêm dữ liệu");
         }
-    }
+    },
+    pushOneCart: async (req, res) => {
+        try {
+            const user_id = req.params.user_id;
+            const id = req.params.id;
+            const newEvaluateData = {
+                product_id: id,
+                user_id: user_id,
+            };
+    
+            // Thêm các comment vào dữ liệu mới nếu chúng tồn tại và không rỗng
+            for (const key in req.body) {
+                const value = req.body[key];
+                // Thực hiện xử lý với key và value tại đây
+                newEvaluateData[key] = value;
+            }
+            const newEvaluate = new test(newEvaluateData);
+            const doc = await newEvaluate.save();
+            return successResponse(res, 200, "Thêm thành công", req.body);
+        } catch (error) {
+            console.error("Lỗi khi lưu đánh giá:", error);
+            res.status(500).json({ error: "Đã xảy ra lỗi khi lưu đánh giá" });
+        }
+    },
+    deleteOneCart: async (req, res) => {
+            const user_id = req.params.user_id;
+            const id = req.params.id;
+            const newEvaluateData = {
+                product_id: id,
+                user_id: user_id,
+            };
+    
+            // Thêm các comment vào dữ liệu mới nếu chúng tồn tại và không rỗng
+            for (const key in req.body) {
+                const value = req.body[key];
+                // Thực hiện xử lý với key và value tại đây
+                newEvaluateData[key] = value;
+            }
+            console.log(newEvaluateData);
+            const ok = await evaluate.deleteOne({ 
+                newEvaluateData
+            });
+            if (ok.deletedCount != 0) {
+                return successResponse(res, 200, "Delete thành công");
+            }
+            else {
+                return errorResponse(res, 404, "Đã xảy ra lỗi");
+        }
+    },
+    getOneDetailUser: async(req, res) => {
+        try {
+            const {user_id, id} = req.params;
+        console.log(id + " " + user_id);
 
+        const user = await User.findByPk(user_id);
+        const evaluation = await evaluate.findOne({
+            user_id: user_id,
+            product_id: id
+        });
+        const mergedData = {
+            user_id: req.params.user_id,
+            username: user.username,
+            product_id: evaluation.product_id,
+            commented: evaluation.commented,
+            voted: evaluation.voted,
+            timecommented: evaluation.createdAt,
+        };
+
+        // Trả về dữ liệu đã hợp nhất
+        return successResponse(res, 200, "Thành công", json(mergedData));
+        } catch (e) {
+            return errorResponse(res, 404, "Đã xảy ra lỗi");
+        }
+    },
+
+
+    
+    getAllCommented: async(req, res) => {
+        const id = req.params.id;
+        try {
+            const results = await evaluate.find({ product_id: id });
+            for (const key in results) {
+                const user = await User.findByPk(results[key].user_id);
+                if (user) {
+                    const mergedData = {
+                        user_id: results[key].user_id,
+                        username: user.username,
+                        product_id: results[key].product_id,
+                        commented: results[key].commented,
+                        voted: results[key].voted,
+                        timecommented: results[key].createdAt,
+                    };
+                    results[key] = mergedData;
+                } else {
+                    console.log("Không tìm thấy người dùng với ID:", results[key].user_id);
+                }
+            }
+            console.log(results);
+            return successResponse(res, 200, "Thành công", results);
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu:", error);
+            return errorResponse(res, 500, "Đã xảy ra lỗi khi lấy dữ liệu");
+        }
+    }    
 }
