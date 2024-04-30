@@ -15,8 +15,8 @@ module.exports = (sequelize, DataTypes) => {
         as: 'category' // Đặt biệt danh cho mối quan hệ, không bắt buộc
       });
       // define association here
-      Productline.hasMany(models.Product, {foreignKey: 'productline_id'}),
-      Productline.belongsTo(models.Category, {foreignKey: 'category_id'});
+      Productline.hasMany(models.Product, { foreignKey: 'productline_id' }),
+        Productline.belongsTo(models.Category, { foreignKey: 'category_id' });
     }
   }
   Productline.init({
@@ -29,8 +29,8 @@ module.exports = (sequelize, DataTypes) => {
     category_id: {
       type: DataTypes.INTEGER
     },
-    productline_name:{
-      type:DataTypes.STRING(200),
+    productline_name: {
+      type: DataTypes.STRING(200),
     }
   }, {
     sequelize,

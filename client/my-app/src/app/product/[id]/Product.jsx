@@ -5,20 +5,19 @@ import Image from "next/image";
 import { Fragment } from "react";
 import style from "./product.module.css";
 import clsx from "clsx";
-import Header from "../(home)/header/Header";
+import Header from "../../(home)/header/Header";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
-import SliderComponent from "./slider/Slider";
 import { faCartPlus } from "@fortawesome/free-solid-svg-icons";
-import Footer from "../footer/Footer";
-import { client } from "../helpers/fetch_api/client";
-import Loading from "../Loading/Loading";
-import showToast from "../helpers/Toastify";
+import Footer from "../../footer/Footer";
+import { client } from "../../helpers/fetch_api/client";
+import Loading from "../../Loading/Loading";
+import showToast from "../../helpers/Toastify";
 import { usePathname, useRouter } from "next/navigation";
 
-import Admin from "../../../public/image/admin2.jpg";
-import { getToken } from "../actions/gettoken.action";
+import Admin from "../../../../public/image/admin2.jpg";
+import { getToken } from "../../actions/gettoken.action";
 
 // Hàm để định dạng số tiền
 function formatCurrency(value) {
@@ -37,7 +36,8 @@ export default function Product({ id }) {
   const [selectedClassify, setSelectedClassify] = useState([]);
 
   const [evaluates, setEvaluates] = useState([]);
-
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [averagePoints, setAveragePoints] = useState(0);
   const [productToCart, setProductToCart] = useState();
 
   const usePathName = usePathname();
@@ -139,6 +139,13 @@ export default function Product({ id }) {
       showToast("error", "Có lỗi xảy ra");
     }
   };
+  useEffect(() => {
+    const total = evaluates.reduce((sum, evaluate) => sum + Number(evaluate.voted), 0);
+    setTotalPoints(total);
+    const average = (evaluates.length > 0) ? (total / evaluates.length).toFixed(1) : 0;
+    setAveragePoints(average);
+  }, [evaluates]);
+
 
   useEffect(() => {
     async function getProductById() {
@@ -179,17 +186,21 @@ export default function Product({ id }) {
     }
     getProductById();
 
-    async function getOneEvaluated() {
+    async function getAllCommented() {
       try {
-        const response = await client.get(`/products/get/one/evaluate/${id}`);
-        setEvaluates(response.data.data);
+        const response = await client.get(`/user/get/all/commented/${id}`);
+        if (Array.isArray(response.data.data)) {
+          setEvaluates(response.data.data);
+        } else {
+          console.log('response.data.data is not an array');
+        }
       } catch (e) {
         console.log(e);
       } finally {
         setIsLoading(false);
       }
     }
-    getOneEvaluated();
+    getAllCommented();
   }, []);
 
   return (
@@ -300,8 +311,8 @@ export default function Product({ id }) {
                             onMouseOver={() =>
                               classifyIndex === 0
                                 ? handleColorHover(
-                                    classify?.ProductImages[0]?.image_link
-                                  )
+                                  classify?.ProductImages[0]?.image_link
+                                )
                                 : null
                             }
                           >
@@ -411,7 +422,7 @@ export default function Product({ id }) {
               <div className="flex flex-col items-center">
                 <div className={clsx(style.box__vote)}>
                   <div>
-                    <span className={style.voting}>4.8</span>
+                    <span className={style.voting}>{averagePoints}</span>
                     trên 5
                   </div>
                   <div className="flex gap-1">
@@ -451,7 +462,7 @@ export default function Product({ id }) {
             </div>
 
             {evaluates?.map((evaluate, index) => (
-              <div key={index} className={clsx(style.user__vote, "p-5")}>
+
               <div key={index} className={clsx(style.user__vote, 'p-5')}>
                 <div className="p-2 flex">
                   <div className="mr-3">
@@ -464,7 +475,7 @@ export default function Product({ id }) {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <h3>bachnguyen04</h3>
+                    <h3>{evaluate?.username}</h3>
                     <div className="flex gap-1">
                       <FontAwesomeIcon
                         icon={faStar}
@@ -505,7 +516,7 @@ export default function Product({ id }) {
                       }}
                     >
                       <div>{evaluate.createdAt}</div>
-                      <div>Phân loại hàng: Trắng + Xám,Thùng 300 cái</div>
+                      {/* <div>Phân loại hàng: Trắng + Xám,Thùng 300 cái</div> */}
                     </div>
                     <div className={style.cmt}>{evaluate.commented}</div>
                   </div>

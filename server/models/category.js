@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       // define association here
-      Category.hasMany(models.Productline, {foreignKey: 'category_id'})
+      Category.hasMany(models.Productline, { foreignKey: 'category_id' })
     }
   }
   Category.init({
@@ -29,6 +29,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     category_name: {
       type: DataTypes.STRING(100)
+    },
+    category_image: {
+      type: DataTypes.STRING(255)
     }
   }, {
     sequelize,
@@ -39,3 +42,4 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Category;
 };
+

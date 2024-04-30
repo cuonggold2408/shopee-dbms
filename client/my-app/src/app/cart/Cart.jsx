@@ -170,6 +170,16 @@ export default function Cart() {
             `/auth/products/cart/${userId}/${product_id}/${classify}`
           );
           console.log("response: ", response.data);
+          const responseData = await client.get(
+            `/auth/products/cart/${userId}`
+          );
+          console.log("responseData: ", responseData.data);
+          const cartWithTotal = responseData.data.data.cart.map((item) => ({
+            ...item,
+            totalPrice: calculateTotalPrice(item.quantity, item.product_price),
+            isChecked: item.is_selected,
+          }));
+          setCart(cartWithTotal);
         } catch (e) {
           console.log(e);
         } finally {
@@ -179,6 +189,7 @@ export default function Cart() {
     );
   };
 
+
   useEffect(() => {
     async function fetchProductToCart() {
       try {
@@ -187,12 +198,16 @@ export default function Cart() {
         const response = await client.get(
           `/auth/products/cart/${dataToken.userId}`
         );
-        console.log("response: ", response.data);
-        const cartWithTotal = response.data.data.cart.map((item) => ({
-          ...item,
-          totalPrice: calculateTotalPrice(item.quantity, item.product_price),
-          isChecked: item.is_selected,
-        }));
+        const cartWithTotal = response.data.data.cart.map((item) => {
+          return {
+            ...item,
+            total_price: calculateTotalPrice(
+              item.quantity,
+              +item.product_price
+            ),
+            isChecked: item.is_selected,
+          };
+        });
         setCart(cartWithTotal);
       } catch (e) {
         console.log(e);
@@ -393,7 +408,7 @@ export default function Cart() {
                   "flex items-center justify-between bg-white mt-5 p-5"
                 )}
               >
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Checkbox
                     checked={allChecked}
                     onChange={handleSelectAll}

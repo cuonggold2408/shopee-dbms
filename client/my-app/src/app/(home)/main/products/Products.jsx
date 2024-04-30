@@ -12,6 +12,7 @@ import { client } from "@/app/helpers/fetch_api/client";
 import showToast from "@/app/helpers/Toastify";
 import { Pagination } from "@nextui-org/react";
 import { config } from "@/app/helpers/fetch_api/config";
+import { usePathname } from "next/navigation";
 // import { v4 as uuidv4 } from "uuid";
 
 const { LIMIT_PAGE } = config;
@@ -27,34 +28,64 @@ const { LIMIT_PAGE } = config;
 //     .replace(/-+$/, ""); // Xóa dấu gạch ngang ở cuối chuỗi
 // }
 
-export default function Products() {
+export default function Products({ name }) {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const router = useRouter();
+  const pathname = decodeURIComponent(usePathname());
+  console.log("pathname: ", decodeURIComponent(pathname));
+  console.log(name);
+  if (pathname === "/") {
+    useEffect(() => {
+      async function getProducts() {
+        try {
+          console.log("page: ", page);
+          console.log("limit: ", LIMIT_PAGE);
+          const response = await client.get(
+            `/products?page=${page}&limit=${LIMIT_PAGE}`
+          );
+          // console.log(response);
+          if (response.data.status !== 200) {
+            showToast("error", response.data.message);
+          }
+          const data = response.data.data;
 
-  useEffect(() => {
-    async function getProducts() {
-      try {
-        console.log("page: ", page);
-        console.log("limit: ", LIMIT_PAGE);
-        const response = await client.get(
-          `/products?page=${page}&limit=${LIMIT_PAGE}`
-        );
-        // console.log(response);
-        if (response.data.status !== 200) {
-          showToast("error", response.data.message);
+          setProducts(data.product);
+          setTotalPage(data.totalPage);
+        } catch (e) {
+          console.log(e);
         }
-        const data = response.data.data;
-
-        setProducts(data.product);
-        setTotalPage(data.totalPage);
-      } catch (e) {
-        console.log(e);
       }
-    }
-    getProducts();
-  }, [page]);
+      getProducts();
+    }, [page]);
+  } else {
+
+    useEffect(() => {
+      async function getFilterProducts() {
+        try {
+          const decodedName = decodeURIComponent(name);
+          console.log("page: ", page);
+          console.log("limit: ", LIMIT_PAGE);
+          const response = await client.get(
+            `/category/show/products/${decodedName}?page=${page}&limit=${LIMIT_PAGE}`
+          );
+          if (response.data.status !== 200) {
+            showToast("error", response.data.message);
+          }
+          const data = response.data.data;
+          console.log("data: ", data);
+          setProducts(data.products);
+
+          setPage(data.Number(page));
+          setTotalPage(data.totalPage);
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      getFilterProducts();
+    }, [page, name]);
+  }
 
   console.log("products: ", products);
 
@@ -74,21 +105,21 @@ export default function Products() {
           "justify-center"
         )}
       >
-        {products.map((product) => {
+        {products?.map((product) => {
           return (
             <div
               className={clsx(style["box-product"])}
               onClick={() => {
                 // router.push(`${slugify(product.product_name)}`);
-                router.push(`/${product.id}`);
+                router.push(`/product/${product.id}`);
               }}
               key={product.id}
             >
               <div className={clsx(style.product)}>
                 <Image
                   src={
-                    product.ProductClassifies[0].ClassifyOptions[0]
-                      .ProductImages[0].image_link
+                    product.ProductClassifies[0]?.ClassifyOptions[0]
+                      ?.ProductImages[0]?.image_link
                   }
                   alt="Product"
                   className={clsx(style["img-product"])}

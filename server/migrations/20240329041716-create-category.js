@@ -12,6 +12,9 @@ module.exports = {
       category_name: {
         type: Sequelize.STRING(100)
       },
+      category_image: {
+        type: Sequelize.STRING(255)
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE

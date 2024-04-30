@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // Mô hình User có mối quan hệ một-nhiều với mô hình Address
       User.hasMany(models.Address, { foreignKey: 'users_id' });
-      User.hasOne(models.Cart, {foreignKey: 'users_id'});
+      User.hasOne(models.Cart, { foreignKey: 'users_id' });
     }
   }
 

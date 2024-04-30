@@ -144,22 +144,67 @@ module.exports = {
       return errorResponse(res, 500, "Đã có lỗi xảy ra");
     }
   },
-  
+
   getOneCategoryProducts: async (req, res) => {
     try {
-      const id = req.params.id;
-      const category = await Category.findByPk(id, { include: Productline }); // Include Productlines when fetching Category
+      function chuyenKhoangTrang(str) {
+        return str.replace(/-/g, ' ');
+      }
+
+      var categoryName = req.params.categoryName;
+      categoryName = chuyenKhoangTrang(categoryName);
+      console.log(categoryName)
+      // Tìm Category theo category_name
+      const category = await Category.findOne({ where: { category_name: categoryName }, include: Productline });
       if (!category) {
         return errorResponse(res, 404, "Không tìm thấy danh mục");
       }
 
+      const { page = 1, limit } = req.query;
+      const offset = (page - 1) * limit;
+
       let allProducts = [];
       for (const productline of category.Productlines) {
-        const products = await productline.getProducts(); // Get products for each productline
+        const products = await productline.getProducts({
+          limit: +limit,
+          offset: offset,
+          include: [
+            {
+              model: ProductClassify,
+              attributes: ["classify_name"],
+              include: [
+                {
+                  model: ClassifyOption,
+                  attributes: ["option_name"],
+                  include: [
+                    {
+                      model: ProductImage,
+                      attributes: ["image_link"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          attributes: [
+            "id",
+            "product_name",
+            "description",
+            "quantity_in_stock",
+            "price",
+          ],
+        }); // Get products for each productline with limit and offset
         allProducts = allProducts.concat(products); // Concatenate products
       }
 
-      return successResponse(res, 200, "success", allProducts);
+      const totalPage = Math.ceil(allProducts.length / limit);
+
+      const data = {
+        products: allProducts,
+        totalPage: totalPage,
+      };
+
+      return successResponse(res, 200, "success", data);
     } catch (e) {
       console.log(e);
       return errorResponse(res, 500, "Đã có lỗi xảy ra");
@@ -217,3 +262,4 @@ module.exports = {
     }
   },
 };
+
