@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Fragment } from "react";
 import Home from "./(home)/Home";
@@ -8,8 +8,7 @@ import { NextUIProvider } from "@nextui-org/react";
 export default function HomePage() {
   return (
     <Fragment>
-      <NextUIProvider >
-
+      <NextUIProvider>
         <Home />
       </NextUIProvider>
       <ToastContainer />

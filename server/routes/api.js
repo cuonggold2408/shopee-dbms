@@ -37,7 +37,11 @@ router.get("/v1/products/category", productsController.showCategories);
 
 router.get("/v1/products/:id", productsController.getProductById);
 
+
+router.get("/v1/products/categories", productsController.showCategories);
+
 router.get("/v1/category/show/products/:id", productsController.getOneCategoryProducts);
+
 
 
 router.get(
@@ -45,7 +49,17 @@ router.get(
   addressController.getAllAddressesByUserId
 );
 
-router.post("/v1/auth/user/add/address/:id", addressController.addAddress);
+router.post("/v1/user/add/address", addressController.addAddress);
+router.get("/v1/user/get/address/:id", addressController.getAddress);
+router.post(
+  "/v1/user/update/selected/address",
+  addressController.updateSelectedAddress
+);
+router.post("/v1/user/update/address", addressController.updateAddress);
+router.get(
+  "/v1/user/get/address/:id/:address_id",
+  addressController.getOneAddress
+);
 
 // Cart
 router.get("/v1/auth/users/cart", cartController.getUserCart);
@@ -56,14 +70,11 @@ router.delete(
   "/v1/auth/products/cart/:id/:product_id/:classify",
   cartController.deleteProductFromCart
 );
-
 router.post("/v1/products/cart", cartController.updateProductToCart);
-
 router.post(
   "/v1/products/selected/cart",
   cartController.addSelectedProductToCart
 );
-
 
 // api for mongoose
 router.get('/v1/products/get/all/evaluate/:user_id', productsControllerMongo.getAllEvaluated);
@@ -88,12 +99,11 @@ router.get('/v1/user/get/one/:user_id/:id', productsControllerMongo.getOneDetail
 // hin tất cả commnt của 1 sản phẩm 
 router.get('/v1/user/get/all/commented/:id', productsControllerMongo.getAllCommented)
 
-
-
 router.post(
   "/v1/products/selected-all/cart",
   cartController.addSelectedProductToCartAll
 );
+router.get("/v1/products/checkout/cart/:id", cartController.getCheckoutCart);
 
 
 router.get("/v1/testinsert", productsControllerMongo.testInsert);
