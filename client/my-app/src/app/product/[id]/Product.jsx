@@ -176,7 +176,7 @@ export default function Product({ id }) {
         const response = await client.get(`/products/${id}`);
         if (response.data.status !== 200) {
           router.push("/not-found");
-          showToast("error", response.data.message);
+          // showToast("error", response.data.message);
         }
         const data = response.data.data;
         setMainImage(

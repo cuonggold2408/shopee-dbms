@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 
 const { LIMIT_PAGE } = config;
 
+// Hàm để định dạng số tiền
 function formatCurrency(value) {
   return value
     .toLocaleString("vi-VN", {
@@ -59,7 +60,7 @@ export default function Products({ name }) {
             `/category/show/products/${decodedName}?page=${page}&limit=${LIMIT_PAGE}`
           );
           if (response.data.status !== 200) {
-            showToast("error", response.data.message);
+            router.push("/not-found");
           }
           const data = response.data.data;
 
