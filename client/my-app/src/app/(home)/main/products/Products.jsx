@@ -5,7 +5,6 @@ import clsx from "clsx";
 import style from "./products.module.css";
 import { Fragment } from "react";
 import Image from "next/image";
-// import ProductImg from "../../../../../../public/image/product.jpg";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { client } from "@/app/helpers/fetch_api/client";
@@ -13,20 +12,17 @@ import showToast from "@/app/helpers/Toastify";
 import { Pagination } from "@nextui-org/react";
 import { config } from "@/app/helpers/fetch_api/config";
 import { usePathname } from "next/navigation";
-// import { v4 as uuidv4 } from "uuid";
 
 const { LIMIT_PAGE } = config;
 
-// function slugify(text) {
-//   return text
-//     .toString()
-//     .toLowerCase()
-//     .replace(/\s+/g, "-") // Thay thế khoảng trắng bằng dấu gạch ngang
-//     .replace(/[^\w\-]+/g, "") // Xóa tất cả các ký tự không phải là chữ, số, hoặc gạch ngang
-//     .replace(/\-\-+/g, "-") // Thay thế các dấu gạch ngang liên tiếp bằng một dấu gạch ngang đơn
-//     .replace(/^-+/, "") // Xóa dấu gạch ngang ở đầu chuỗi
-//     .replace(/-+$/, ""); // Xóa dấu gạch ngang ở cuối chuỗi
-// }
+// Hàm để định dạng số tiền
+function formatCurrency(value) {
+  return value
+    .toLocaleString("vi-VN", {
+      maximumFractionDigits: 0, // Không hiển thị phần thập phân
+    })
+    .replace(/,/g, "."); // Đổi dấu phẩy thành dấu chấm
+}
 
 export default function Products({ name }) {
   const [products, setProducts] = useState([]);
@@ -40,12 +36,9 @@ export default function Products({ name }) {
     useEffect(() => {
       async function getProducts() {
         try {
-          console.log("page: ", page);
-          console.log("limit: ", LIMIT_PAGE);
           const response = await client.get(
             `/products?page=${page}&limit=${LIMIT_PAGE}`
           );
-          // console.log(response);
           if (response.data.status !== 200) {
             showToast("error", response.data.message);
           }
@@ -65,13 +58,11 @@ export default function Products({ name }) {
       async function getFilterProducts() {
         try {
           const decodedName = decodeURIComponent(name);
-          console.log("page: ", page);
-          console.log("limit: ", LIMIT_PAGE);
           const response = await client.get(
             `/category/show/products/${decodedName}?page=${page}&limit=${LIMIT_PAGE}`
           );
           if (response.data.status !== 200) {
-            showToast("error", response.data.message);
+            router.push("/not-found");
           }
           const data = response.data.data;
           console.log("data: ", data);
@@ -132,7 +123,7 @@ export default function Products({ name }) {
                   </h3>
                   <div className="flex items-center justify-between">
                     <div className={clsx(style["price-product"], "p-2")}>
-                      <span>{product.price}</span>đ
+                      <span>{formatCurrency(+product.price)}</span>đ
                     </div>
                     <div className={clsx(style["quantity-sold"], "p-2")}>
                       Đã bán

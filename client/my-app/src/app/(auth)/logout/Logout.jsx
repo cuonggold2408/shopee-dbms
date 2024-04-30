@@ -23,6 +23,9 @@ export default function Logout({ name }) {
     await deleteToken();
     router.push("/login");
   };
+  const handeClick = () => {
+    router.push("/purchase");
+  };
 
   return (
     <div>
@@ -47,9 +50,9 @@ export default function Logout({ name }) {
         onClose={handleClose}
         TransitionComponent={Fade}
       >
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        <MenuItem onClick={handleClose}>Thông tin</MenuItem>
+        <MenuItem onClick={handeClick}>Đơn hàng</MenuItem>
+        <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
       </Menu>
     </div>
   );
