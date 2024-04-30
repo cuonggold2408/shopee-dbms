@@ -85,6 +85,10 @@ export default function Checkout() {
     setChecked(!checked);
   };
 
+  const handleCloseAddress = () => {
+    setOpenAddress(false);
+  }
+
   const handleSelectAddress = (id) => {
     setSelectedAddressId(id);
   };
@@ -166,6 +170,7 @@ export default function Checkout() {
       }
       showToast("success", response.data.message);
       setAddressSelected(response.data.data.address);
+      setOpenAddress(false);
     } catch (e) {
       console.log(e);
     }
@@ -760,6 +765,7 @@ export default function Checkout() {
                     <Button
                       className="bg-red-500 text-white rounded-sm hover:bg-red-400 cursor-pointer flex justify-center items-center"
                       style={{ width: "140px", height: "40px" }}
+                      onClick={handleCloseAddress}
                     >
                       Hoàn thành
                     </Button>
@@ -767,6 +773,7 @@ export default function Checkout() {
                     <Box
                       className="bg-red-500 text-white rounded-sm hover:bg-red-400 cursor-pointer flex justify-center items-center"
                       style={{ width: "140px", height: "40px" }}
+                      onClick={handleCloseAddress}
                     >
                       Hoàn thành
                     </Box>

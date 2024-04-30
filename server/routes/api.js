@@ -37,10 +37,7 @@ router.get("/v1/products/category", productsController.showCategories);
 
 router.get("/v1/products/:id", productsController.getProductById);
 
-
-router.get("/v1/products/categories", productsController.showCategories);
-
-router.get("/v1/category/show/products/:id", productsController.getOneCategoryProducts);
+router.get("/v1/category/show/products/:categoryName", productsController.getOneCategoryProducts);
 
 
 

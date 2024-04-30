@@ -18,7 +18,7 @@ export default function Categories() {
             try {
                 const response = await client.get("/products/category");
                 setCategory(response.data.data);
-                console.log("Category: ", response.data);
+                console.log("Category: ", response.data.data);
             } catch (error) {
                 console.error("Failed to fetch category: ", error);
             }
@@ -44,13 +44,14 @@ export default function Categories() {
                     )}
                 >
                     {category?.map(category => (
+                        console.log("category là : ", category),
                         <div
                             key={category.id}
                             className={clsx(
                                 style["category-item"],
                                 "flex items-center justify-center"
                             )}
-                            onClick={() => handleBoxClick(category.category_name.replaceAll(' ', '-'))}
+                            onClick={() => handleBoxClick(category?.category_name.replaceAll(' ', '-'))}
                         >
                             <div className="flex items-center flex-col ">
                                 <Image

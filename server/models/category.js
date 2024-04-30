@@ -1,5 +1,7 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Category extends Model {
     /**
@@ -8,14 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // Category.hasMany(models.Productline, {
-      //   foreignKey: 'category_id', // Khóa ngoại của ProductLine trỏ đến khóa chính của Category
-      //   as: 'productLines' // Đặt biệt danh cho mối quan hệ, không bắt buộc
-      // });
+
+      Category.hasMany(models.Productline, {
+        foreignKey: 'category_id', // Khóa ngoại của ProductLine trỏ đến khóa chính của Category
+        as: 'productLines' // Đặt biệt danh cho mối quan hệ, không bắt buộc
+      });
 
       // define association here
-      Category.hasMany(models.Productline, { foreignKey: "category_id" });
-
+      Category.hasMany(models.Productline, { foreignKey: 'category_id' })
     }
   }
   Category.init({
