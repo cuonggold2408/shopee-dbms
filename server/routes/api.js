@@ -33,9 +33,16 @@ router.get("/v1/products/category/:id", productsController.getOneCategory);
 
 router.get("/v1/products", productsController.getProducts);
 
+router.get("/v1/products/category", productsController.showCategories);
+
 router.get("/v1/products/:id", productsController.getProductById);
 
+
 router.get("/v1/products/categories", productsController.showCategories);
+
+router.get("/v1/category/show/products/:id", productsController.getOneCategoryProducts);
+
+
 
 router.get(
   "/v1/auth/users/get/address/:id",
@@ -68,33 +75,36 @@ router.post(
   "/v1/products/selected/cart",
   cartController.addSelectedProductToCart
 );
+
+// api for mongoose
+router.get('/v1/products/get/all/evaluate/:user_id', productsControllerMongo.getAllEvaluated);
+
+router.get('/v1/products/get/one/evaluate/:user_id/:id', productsControllerMongo.getOneEvaluated);
+
+// post 
+router.post('/v1/products/post/one/new/evaluate/:user_id/:id', productsControllerMongo.pushOneEvaluate);
+
+router.put('/v1/products/update/one/evaluated/:user_id/:id', productsControllerMongo.updateOneEvaluated);
+router.delete('/v1/products/delete/one/evaluated/:user_id/:id', productsControllerMongo.deleteOneEvaluated);
+
+router.get('/v1/testinsert', productsControllerMongo.testInsert);
+router.post('/v1/carts/post/one/carted/:user_id/:id', productsControllerMongo.pushOneCart);
+router.delete('/v1/carts/delete/one/carted/:user_id/:id', productsControllerMongo.deleteOneCart);
+
+// api for mongoose and mysql
+
+// get one commt ví dụ khi xm lịch sử mua hàng của mình
+router.get('/v1/user/get/one/:user_id/:id', productsControllerMongo.getOneDetailUser)
+
+// hin tất cả commnt của 1 sản phẩm 
+router.get('/v1/user/get/all/commented/:id', productsControllerMongo.getAllCommented)
+
 router.post(
   "/v1/products/selected-all/cart",
   cartController.addSelectedProductToCartAll
 );
 router.get("/v1/products/checkout/cart/:id", cartController.getCheckoutCart);
 
-// api for mongoose
-router.get(
-  "/v1/products/get/all/evaluate/:user_id",
-  productsControllerMongo.getAllEvaluated
-);
-router.get(
-  "/v1/products/get/one/evaluate/:user_id/:id",
-  productsControllerMongo.getOneEvaluated
-);
-router.post(
-  "/v1/products/post/one/new/evaluate/:user_id/:id",
-  productsControllerMongo.pushOneEvaluate
-);
-router.put(
-  "/v1/products/update/one/evaluated/:user_id/:id",
-  productsControllerMongo.updateOneEvaluated
-);
-router.delete(
-  "/v1/products/delete/one/evaluated/:user_id/:id",
-  productsControllerMongo.deleteOneEvaluated
-);
 
 router.get("/v1/testinsert", productsControllerMongo.testInsert);
 
