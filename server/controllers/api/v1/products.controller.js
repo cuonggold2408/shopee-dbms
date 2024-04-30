@@ -148,14 +148,16 @@ module.exports = {
   getOneCategoryProducts: async (req, res) => {
     try {
       function chuyenKhoangTrang(str) {
-        return str.replace(/-/g, ' ');
+        return str.replace(/-/g, " ");
       }
 
       var categoryName = req.params.categoryName;
       categoryName = chuyenKhoangTrang(categoryName);
-      console.log(categoryName)
       // Tìm Category theo category_name
-      const category = await Category.findOne({ where: { category_name: categoryName }, include: Productline });
+      const category = await Category.findOne({
+        where: { category_name: categoryName },
+        include: Productline,
+      });
       if (!category) {
         return errorResponse(res, 404, "Không tìm thấy danh mục");
       }

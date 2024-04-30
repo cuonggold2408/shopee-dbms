@@ -102,7 +102,6 @@ module.exports = {
         newAddress,
       });
     } catch (error) {
-      console.log("Lỗi khi thêm address:", error);
       return errorResponse(res, 500, "Lỗi khi thêm address");
     }
   },
@@ -206,8 +205,6 @@ module.exports = {
         name_receiver,
         default_address,
       } = req.body;
-
-      console.log(req.body);
 
       if (!address_line || !phone_receiver || !name_receiver) {
         return errorResponse(res, 400, "Vui lòng nhập đầy đủ thông tin.");

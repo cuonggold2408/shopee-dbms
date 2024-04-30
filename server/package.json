@@ -26,6 +26,7 @@
     "otp-generator": "^4.0.1",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
+    "redis": "^4.6.13",
     "sequelize": "^6.37.1"
   },
   "devDependencies": {

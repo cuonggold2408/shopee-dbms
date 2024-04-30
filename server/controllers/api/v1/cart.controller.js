@@ -1,5 +1,6 @@
 const { errorResponse, successResponse } = require("../../../utils/response");
 const { User, Address, Cart, CartDetail } = require("../../../models/index");
+const Cache = require("../../../core/cache");
 
 module.exports = {
   getUserCart: async (req, res) => {
@@ -90,11 +91,32 @@ module.exports = {
   getProductToCart: async (req, res) => {
     const id = req.params.id;
     try {
-      const { count, rows: cart } = await CartDetail.findAndCountAll({
-        where: {
-          cart_id: id,
-        },
-      });
+      // Check bộ nhớ cache có product trong cart chưa. Key là product_cart-cache
+      // let resultCache = await (await client).get("product_cart");
+      // if (!resultCache) {
+      //   resultCache = await CartDetail.findAndCountAll({
+      //     where: {
+      //       cart_id: id,
+      //     },
+      //   });
+      //   await (
+      //     await client
+      //   ).set("product_cart", JSON.stringify(resultCache), "EX", 60 * 60 * 24);
+      // } else {
+      //   resultCache = JSON.parse(resultCache);
+      // }
+      const { count, rows: cart } = await Cache.remember(
+        "product_cart",
+        60 * 60 * 24,
+        () => {
+          return CartDetail.findAndCountAll({
+            where: {
+              cart_id: id,
+            },
+          });
+        }
+      );
+
       return successResponse(
         res,
         201,

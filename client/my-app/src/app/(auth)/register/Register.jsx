@@ -23,7 +23,6 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    console.log(emailRegex(formData.get("email")));
     if (
       !formData.get("username") ||
       !formData.get("phone_number") ||
@@ -54,7 +53,6 @@ export default function Register() {
       password: formData.get("password"),
     };
 
-    console.log(userData);
     try {
       setLoading(true);
       const response = await client.post("/auth/register", userData);
