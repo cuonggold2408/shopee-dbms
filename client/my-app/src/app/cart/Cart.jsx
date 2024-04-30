@@ -201,6 +201,7 @@ export default function Cart() {
     );
   };
 
+
   useEffect(() => {
     async function fetchProductToCart() {
       try {
@@ -418,7 +419,7 @@ export default function Cart() {
                   "flex items-center justify-between bg-white mt-5 p-5"
                 )}
               >
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Checkbox
                     checked={allChecked}
                     onChange={handleSelectAll}

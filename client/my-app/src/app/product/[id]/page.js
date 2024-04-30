@@ -9,3 +9,4 @@ export default function ProductPage({ params }) {
   const { id } = params;
   return <Product id={id} />;
 }
+

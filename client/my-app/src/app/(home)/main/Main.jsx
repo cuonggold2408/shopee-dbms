@@ -6,8 +6,8 @@ import Image from "next/image";
 import style from "./main.module.css";
 import Carousel from "./carousel/Carousel";
 import BannerImg from "../../../../public/image/banner01.jpg";
-import Category from "./category/Category";
-import Products from "./category/products/Products";
+import Products from "./products/Products";
+import Categories from "./categories/Categories";
 
 export default function Main() {
   return (
@@ -41,7 +41,7 @@ export default function Main() {
               </div>
             </div>
           </div>
-          <Category />
+          <Categories />
           <Products />
         </div>
       </div>

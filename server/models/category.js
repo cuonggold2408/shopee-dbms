@@ -15,27 +15,28 @@ module.exports = (sequelize, DataTypes) => {
 
       // define association here
       Category.hasMany(models.Productline, { foreignKey: "category_id" });
+
     }
   }
-  Category.init(
-    {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: DataTypes.INTEGER,
-      },
-      category_name: {
-        type: DataTypes.STRING(100),
-      },
+  Category.init({
+    id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
     },
-    {
-      sequelize,
-      modelName: "Category",
-      tableName: "categories",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+    category_name: {
+      type: DataTypes.STRING(100)
+    },
+    category_image: {
+      type: DataTypes.STRING(255)
     }
-  );
+  }, {
+    sequelize,
+    modelName: 'Category',
+    tableName: 'categories',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+  });
   return Category;
 };
