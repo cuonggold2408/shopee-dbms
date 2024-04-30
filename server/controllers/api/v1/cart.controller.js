@@ -238,4 +238,27 @@ module.exports = {
       );
     }
   },
+  getCheckoutCart: async (req, res) => {
+    const id = req.params.id;
+    try {
+      const { count, rows: cart } = await CartDetail.findAndCountAll({
+        where: {
+          cart_id: id,
+          is_selected: true,
+        },
+      });
+      return successResponse(
+        res,
+        201,
+        "Lấy sản phẩm để thanh toán thành công",
+        {
+          cart,
+          count,
+        }
+      );
+    } catch (error) {
+      console.error("Lỗi khi lấy sản phẩm trong giỏ hàng:", error);
+      return errorResponse(res, 500, "Lỗi khi lấy sản phẩm trong giỏ hàng");
+    }
+  },
 };

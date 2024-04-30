@@ -14,6 +14,8 @@ import Checkbox from "@mui/material/Checkbox";
 import showToast from "../helpers/Toastify";
 import Loading from "../Loading/Loading";
 import { ToastContainer } from "react-toastify";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function formatCurrency(value) {
   return value
@@ -35,6 +37,7 @@ export default function Cart() {
   const [allChecked, setAllChecked] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantity, setTotalQuantity] = useState(0);
+  const router = useRouter();
 
   const increaseQuantity = (index) => {
     updateCart(index, cart[index].quantity + 1);
@@ -43,6 +46,15 @@ export default function Cart() {
   const decreaseQuantity = (index) => {
     if (cart[index].quantity > 1) {
       updateCart(index, cart[index].quantity - 1);
+    }
+  };
+
+  const handleBuyProduct = () => {
+    if (totalPrice === 0) {
+      showToast("error", "Vui lòng chọn sản phẩm để tiếp tục");
+      return;
+    } else {
+      router.push("/checkout");
     }
   };
 
@@ -170,6 +182,16 @@ export default function Cart() {
             `/auth/products/cart/${userId}/${product_id}/${classify}`
           );
           console.log("response: ", response.data);
+          const responseData = await client.get(
+            `/auth/products/cart/${userId}`
+          );
+          console.log("responseData: ", responseData.data);
+          const cartWithTotal = responseData.data.data.cart.map((item) => ({
+            ...item,
+            totalPrice: calculateTotalPrice(item.quantity, item.product_price),
+            isChecked: item.is_selected,
+          }));
+          setCart(cartWithTotal);
         } catch (e) {
           console.log(e);
         } finally {
@@ -187,12 +209,16 @@ export default function Cart() {
         const response = await client.get(
           `/auth/products/cart/${dataToken.userId}`
         );
-        console.log("response: ", response.data);
-        const cartWithTotal = response.data.data.cart.map((item) => ({
-          ...item,
-          totalPrice: calculateTotalPrice(item.quantity, item.product_price),
-          isChecked: item.is_selected,
-        }));
+        const cartWithTotal = response.data.data.cart.map((item) => {
+          return {
+            ...item,
+            total_price: calculateTotalPrice(
+              item.quantity,
+              +item.product_price
+            ),
+            isChecked: item.is_selected,
+          };
+        });
         setCart(cartWithTotal);
       } catch (e) {
         console.log(e);
@@ -202,7 +228,6 @@ export default function Cart() {
   }, []);
 
   useEffect(() => {
-    console.log("cart 204: ", cart);
     const allSelected = cart.every((item) => item.isChecked);
     setAllChecked(allSelected);
   }, [cart]);
@@ -420,7 +445,12 @@ export default function Cart() {
                   >
                     ₫{formatCurrency(totalPrice)}
                   </div>
-                  <button className={styles.btn__buy}>Mua hàng</button>
+                  <button
+                    onClick={handleBuyProduct}
+                    className={styles.btn__buy}
+                  >
+                    Mua hàng
+                  </button>
                 </div>
               </div>
             </div>

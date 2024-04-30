@@ -5,6 +5,7 @@ const {
   Category,
   ClassifyOption,
   ProductImage,
+  sequelize,
 } = require("../../../models/index");
 const { errorResponse, successResponse } = require("../../../utils/response");
 
@@ -117,11 +118,12 @@ module.exports = {
 
   showCategories: async (req, res) => {
     try {
-      const category = await Category.findAll();
-      if (!category) {
+      const categories = await sequelize.query("SELECT * FROM categories");
+      console.log("categories", categories);
+      if (!categories) {
         return errorResponse(res, 404, "Not Found");
       } else {
-        return successResponse(res, 200, "success", category);
+        return successResponse(res, 200, "success", categories);
       }
     } catch (e) {
       console.log(e);

@@ -451,66 +451,68 @@ export default function Product({ id }) {
             </div>
 
             {evaluates?.map((evaluate, index) => (
-              <div key={index} className={clsx(style.user__vote, "p-5")}>
-              <div key={index} className={clsx(style.user__vote, 'p-5')}>
-                <div className="p-2 flex">
-                  <div className="mr-3">
-                    <Image
-                      src={Admin}
-                      alt="user"
-                      width={40}
-                      height={40}
-                      className={style.avt__user}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <h3>bachnguyen04</h3>
-                    <div className="flex gap-1">
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
+              <Fragment key={index}>
+                <div className={clsx(style.user__vote, "p-5")}></div>
+                <div className={clsx(style.user__vote, "p-5")}>
+                  <div className="p-2 flex">
+                    <div className="mr-3">
+                      <Image
+                        src={Admin}
+                        alt="user"
+                        width={40}
+                        height={40}
+                        className={style.avt__user}
                       />
                     </div>
-                    <div
-                      className="flex gap-3"
-                      style={{
-                        color: "rgb(200,200,200)",
-                        fontSize: "13px",
-                      }}
-                    >
-                      <div>{evaluate.createdAt}</div>
-                      <div>Phân loại hàng: Trắng + Xám,Thùng 300 cái</div>
+                    <div className="flex flex-col gap-1">
+                      <h3>bachnguyen04</h3>
+                      <div className="flex gap-1">
+                        <FontAwesomeIcon
+                          icon={faStar}
+                          width={15}
+                          height={15}
+                          className={style.vote__icon}
+                        />
+                        <FontAwesomeIcon
+                          icon={faStar}
+                          width={15}
+                          height={15}
+                          className={style.vote__icon}
+                        />
+                        <FontAwesomeIcon
+                          icon={faStar}
+                          width={15}
+                          height={15}
+                          className={style.vote__icon}
+                        />
+                        <FontAwesomeIcon
+                          icon={faStar}
+                          width={15}
+                          height={15}
+                          className={style.vote__icon}
+                        />
+                        <FontAwesomeIcon
+                          icon={faStar}
+                          width={15}
+                          height={15}
+                          className={style.vote__icon}
+                        />
+                      </div>
+                      <div
+                        className="flex gap-3"
+                        style={{
+                          color: "rgb(200,200,200)",
+                          fontSize: "13px",
+                        }}
+                      >
+                        <div>{evaluate.createdAt}</div>
+                        <div>Phân loại hàng: Trắng + Xám,Thùng 300 cái</div>
+                      </div>
+                      <div className={style.cmt}>{evaluate.commented}</div>
                     </div>
-                    <div className={style.cmt}>{evaluate.commented}</div>
                   </div>
                 </div>
-              </div>
+              </Fragment>
             ))}
           </div>
         </div>
