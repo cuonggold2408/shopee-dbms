@@ -14,8 +14,7 @@ module.exports = {
     try {
       const { access_token: accessToken, refresh_token: refreshToken } =
         req.body;
-      // console.log("accessToken ở dòng 10: ", accessToken);
-      // console.log("refreshToken ở dòng 11: ", refreshToken);
+
       const decodedAccess = decodeToken(accessToken);
       const decodedRefresh = decodeToken(refreshToken);
       if (!decodedAccess || !decodedRefresh) {

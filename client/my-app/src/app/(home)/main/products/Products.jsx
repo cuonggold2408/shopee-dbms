@@ -30,8 +30,7 @@ export default function Products({ name }) {
   const [totalPage, setTotalPage] = useState(1);
   const router = useRouter();
   const pathname = decodeURIComponent(usePathname());
-  console.log("pathname: ", decodeURIComponent(pathname));
-  console.log(name);
+
   if (pathname === "/") {
     useEffect(() => {
       async function getProducts() {
@@ -53,7 +52,6 @@ export default function Products({ name }) {
       getProducts();
     }, [page]);
   } else {
-
     useEffect(() => {
       async function getFilterProducts() {
         try {
@@ -65,7 +63,7 @@ export default function Products({ name }) {
             router.push("/not-found");
           }
           const data = response.data.data;
-          console.log("data: ", data);
+
           setProducts(data.products);
 
           setPage(data.Number(page));
@@ -77,8 +75,6 @@ export default function Products({ name }) {
       getFilterProducts();
     }, [page, name]);
   }
-
-  console.log("products: ", products);
 
   // Hàm để xử lý sự kiện khi người dùng muốn chuyển trang
   function handlePageChange(newPage) {

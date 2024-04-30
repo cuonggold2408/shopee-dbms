@@ -87,7 +87,7 @@ export default function Checkout() {
 
   const handleCloseAddress = () => {
     setOpenAddress(false);
-  }
+  };
 
   const handleSelectAddress = (id) => {
     setSelectedAddressId(id);
@@ -96,7 +96,6 @@ export default function Checkout() {
   const handleGetUpdateAddress = async (id) => {
     try {
       const chooseAddress = address.find((item) => item.address_id === id);
-      console.log("chooseAddress", chooseAddress);
 
       setAddressDetails({
         saveAddress: chooseAddress.address_line,
@@ -119,10 +118,6 @@ export default function Checkout() {
       const name = formData.get("nameupdate");
       const phone = formData.get("phoneupdate");
       const address = formData.get("addressupdate");
-      console.log("addressDetails", addressDetails);
-      console.log("name", name);
-      console.log("phone", phone);
-      console.log("address", address);
 
       const response = await client.post("/user/update/address", {
         users_id: userId,
@@ -142,11 +137,9 @@ export default function Checkout() {
       const responseGetDataAddress = await client.get(
         `/user/get/address/${userId}`
       );
-      console.log("responseGetDataAddress", responseGetDataAddress.data.data);
       const defaultSelected = responseGetDataAddress.data.data.address.find(
         (item) => item.is_selected
       );
-      console.log("defaultSelected", defaultSelected);
       if (defaultSelected) {
         setSelectedAddressId(defaultSelected.address_id); // Cập nhật state với ID của địa chỉ được chọn
       }
@@ -215,7 +208,6 @@ export default function Checkout() {
           `/products/checkout/cart/${dataToken.userId}`
         );
         setProduct(response.data.data.cart);
-        console.log("response", response.data);
       } catch (e) {
         console.log(e);
       }
@@ -235,7 +227,6 @@ export default function Checkout() {
         const defaultSelected = response.data.data.address.find(
           (item) => item.is_selected
         );
-        console.log("defaultSelected", defaultSelected);
         if (defaultSelected) {
           setSelectedAddressId(defaultSelected.address_id); // Cập nhật state với ID của địa chỉ được chọn
         }
@@ -254,7 +245,6 @@ export default function Checkout() {
 
   useEffect(() => {
     let total = 0;
-    console.log("product", product);
     product.forEach((item) => {
       total += +item.total_price;
     });
@@ -641,7 +631,6 @@ export default function Checkout() {
                   {/* Box địa chỉ */}
                   <Box className="flex flex-col gap-4">
                     {address?.map((item, index) => {
-                      console.log("item", item);
                       return (
                         <Box key={index} className="flex gap-4 border-b-1 mb-2">
                           <Box>

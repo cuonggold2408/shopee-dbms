@@ -18,6 +18,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import Admin from "../../../../public/image/admin2.jpg";
 import { getToken } from "../../actions/gettoken.action";
+import { ToastContainer } from "react-toastify";
 
 // Hàm để định dạng số tiền
 function formatCurrency(value) {
@@ -26,6 +27,10 @@ function formatCurrency(value) {
       maximumFractionDigits: 0, // Không hiển thị phần thập phân
     })
     .replace(/,/g, "."); // Đổi dấu phẩy thành dấu chấm
+}
+
+function calculator(price) {
+  return price + price * 0.11;
 }
 
 export default function Product({ id }) {
@@ -47,9 +52,7 @@ export default function Product({ id }) {
   const increaseQuantity = () => {
     const newQuantity = quantity + 1;
     setQuantity(newQuantity);
-    console.log(newQuantity);
     setProductToCart((prev) => {
-      console.log(prev);
       return {
         ...prev,
         quantity: newQuantity,
@@ -60,10 +63,8 @@ export default function Product({ id }) {
   const decreaseQuantity = () => {
     if (quantity > 1) {
       const newQuantity = quantity - 1;
-      console.log(newQuantity);
       setQuantity(newQuantity);
       setProductToCart((prev) => {
-        console.log(prev);
         return {
           ...prev,
           quantity: newQuantity,
@@ -85,7 +86,6 @@ export default function Product({ id }) {
 
       const selectedOption =
         product.ProductClassifies[categoryIndex].ClassifyOptions[optionIndex];
-      console.log(selectedOption);
       if (
         selectedOption.ProductImages &&
         selectedOption.ProductImages.length > 0
@@ -93,7 +93,6 @@ export default function Product({ id }) {
         const newMainImage = selectedOption.ProductImages[0].image_link;
         setMainImage(newMainImage);
         setProductToCart((prev) => {
-          console.log(prev);
           return {
             ...prev,
             image_product: newMainImage,
@@ -102,7 +101,6 @@ export default function Product({ id }) {
       }
 
       setProductToCart((prev) => {
-        console.log(prev);
         return {
           ...prev,
           classify: newSelected
@@ -122,30 +120,55 @@ export default function Product({ id }) {
 
   const handleAddToCart = async () => {
     const token = await getToken();
-    console.log(token);
     if (!token) {
       router.push("/login");
       return;
     }
     try {
+      if (productToCart.classify === "") {
+        showToast("error", "Vui lòng chọn thông tin sản phẩm");
+        return;
+      }
+      const delCache = await client.post("/clear-cache");
+
       const response = await client.post("/auth/products/cart", productToCart);
       if (!response.data.status === 201) {
         showToast("error", response.data.message);
       }
-      showToast("success", response.data.message);
       window.location.reload();
     } catch (e) {
       console.log(e);
       showToast("error", "Có lỗi xảy ra");
     }
   };
+
+  const handleBuyProduct = async () => {
+    try {
+      setIsLoading(true);
+      const delCache = await client.post("/clear-cache");
+      const response = await client.post("/auth/products/cart", productToCart);
+      if (!response.data.status === 201) {
+        showToast("error", response.data.message);
+      }
+      showToast("success", response.data.message);
+      setIsLoading(false);
+      router.push("/cart");
+    } catch (e) {
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const total = evaluates.reduce((sum, evaluate) => sum + Number(evaluate.voted), 0);
+    const total = evaluates.reduce(
+      (sum, evaluate) => sum + Number(evaluate.voted),
+      0
+    );
     setTotalPoints(total);
-    const average = (evaluates.length > 0) ? (total / evaluates.length).toFixed(1) : 0;
+    const average =
+      evaluates.length > 0 ? (total / evaluates.length).toFixed(1) : 0;
     setAveragePoints(average);
   }, [evaluates]);
-
 
   useEffect(() => {
     async function getProductById() {
@@ -160,7 +183,6 @@ export default function Product({ id }) {
           data.ProductClassifies[0].ClassifyOptions[0].ProductImages[0]
             .image_link
         );
-        console.log("data: ", data);
         setProduct(data);
 
         const dataToken = await getToken();
@@ -192,7 +214,6 @@ export default function Product({ id }) {
         if (Array.isArray(response.data.data)) {
           setEvaluates(response.data.data);
         } else {
-          console.log('response.data.data is not an array');
         }
       } catch (e) {
         console.log(e);
@@ -269,7 +290,9 @@ export default function Product({ id }) {
                   backgroundColor: "#f5f5f5",
                 }}
               >
-                <span className={style.price__old}>₫34.999.000</span>
+                <span className={style.price__old}>
+                  ₫{formatCurrency(calculator(+product.price))}
+                </span>
                 <span className={style.price__new}>
                   đ{product.price && formatCurrency(+product.price)}
                 </span>
@@ -311,8 +334,8 @@ export default function Product({ id }) {
                             onMouseOver={() =>
                               classifyIndex === 0
                                 ? handleColorHover(
-                                  classify?.ProductImages[0]?.image_link
-                                )
+                                    classify?.ProductImages[0]?.image_link
+                                  )
                                 : null
                             }
                           >
@@ -378,7 +401,9 @@ export default function Product({ id }) {
                   />
                   Thêm vào giỏ hàng
                 </button>
-                <button className={style.btn__buy}>Mua ngay</button>
+                <button onClick={handleBuyProduct} className={style.btn__buy}>
+                  Mua ngay
+                </button>
               </div>
             </div>
             <div></div>
@@ -462,8 +487,7 @@ export default function Product({ id }) {
             </div>
 
             {evaluates?.map((evaluate, index) => (
-
-              <div key={index} className={clsx(style.user__vote, 'p-5')}>
+              <div key={index} className={clsx(style.user__vote, "p-5")}>
                 <div className="p-2 flex">
                   <div className="mr-3">
                     <Image
@@ -528,6 +552,7 @@ export default function Product({ id }) {
       </div>
 
       <Footer />
-    </Fragment >
+      <ToastContainer />
+    </Fragment>
   );
 }

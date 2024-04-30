@@ -9,6 +9,8 @@ const addressController = require("../controllers/api/v1/address.controller");
 const cartController = require("../controllers/api/v1/cart.controller");
 const verifyController = require("../controllers/api/v1/verify.controller");
 
+const redis = require("../utils/redis");
+
 var router = express.Router();
 
 // Authenication
@@ -37,9 +39,10 @@ router.get("/v1/products/category", productsController.showCategories);
 
 router.get("/v1/products/:id", productsController.getProductById);
 
-router.get("/v1/category/show/products/:categoryName", productsController.getOneCategoryProducts);
-
-
+router.get(
+  "/v1/category/show/products/:categoryName",
+  productsController.getOneCategoryProducts
+);
 
 router.get(
   "/v1/auth/users/get/address/:id",
@@ -73,35 +76,68 @@ router.post(
   cartController.addSelectedProductToCart
 );
 
+// clear cache
+router.post("/v1/clear-cache", async (req, res) => {
+  const client = await redis;
+  await client.del("product_cart");
+  res.json({ message: "Clear cache successfully" });
+});
+
 // api for mongoose
-router.get('/v1/products/get/all/evaluate/:user_id', productsControllerMongo.getAllEvaluated);
+router.get(
+  "/v1/products/get/all/evaluate/:user_id",
+  productsControllerMongo.getAllEvaluated
+);
 
-router.get('/v1/products/get/one/evaluate/:user_id/:id', productsControllerMongo.getOneEvaluated);
+router.get(
+  "/v1/products/get/one/evaluate/:user_id/:id",
+  productsControllerMongo.getOneEvaluated
+);
 
-// post 
-router.post('/v1/products/post/one/new/evaluate/:user_id/:id', productsControllerMongo.pushOneEvaluate);
+// post
+router.post(
+  "/v1/products/post/one/new/evaluate/:user_id/:id",
+  productsControllerMongo.pushOneEvaluate
+);
 
-router.put('/v1/products/update/one/evaluated/:user_id/:id', productsControllerMongo.updateOneEvaluated);
-router.delete('/v1/products/delete/one/evaluated/:user_id/:id', productsControllerMongo.deleteOneEvaluated);
+router.put(
+  "/v1/products/update/one/evaluated/:user_id/:id",
+  productsControllerMongo.updateOneEvaluated
+);
+router.delete(
+  "/v1/products/delete/one/evaluated/:user_id/:id",
+  productsControllerMongo.deleteOneEvaluated
+);
 
-router.get('/v1/testinsert', productsControllerMongo.testInsert);
-router.post('/v1/carts/post/one/carted/:user_id/:id', productsControllerMongo.pushOneCart);
-router.delete('/v1/carts/delete/one/carted/:user_id/:id', productsControllerMongo.deleteOneCart);
+router.get("/v1/testinsert", productsControllerMongo.testInsert);
+router.post(
+  "/v1/carts/post/one/carted/:user_id/:id",
+  productsControllerMongo.pushOneCart
+);
+router.delete(
+  "/v1/carts/delete/one/carted/:user_id/:id",
+  productsControllerMongo.deleteOneCart
+);
 
 // api for mongoose and mysql
 
 // get one commt ví dụ khi xm lịch sử mua hàng của mình
-router.get('/v1/user/get/one/:user_id/:id', productsControllerMongo.getOneDetailUser)
+router.get(
+  "/v1/user/get/one/:user_id/:id",
+  productsControllerMongo.getOneDetailUser
+);
 
-// hin tất cả commnt của 1 sản phẩm 
-router.get('/v1/user/get/all/commented/:id', productsControllerMongo.getAllCommented)
+// hin tất cả commnt của 1 sản phẩm
+router.get(
+  "/v1/user/get/all/commented/:id",
+  productsControllerMongo.getAllCommented
+);
 
 router.post(
   "/v1/products/selected-all/cart",
   cartController.addSelectedProductToCartAll
 );
 router.get("/v1/products/checkout/cart/:id", cartController.getCheckoutCart);
-
 
 router.get("/v1/testinsert", productsControllerMongo.testInsert);
 

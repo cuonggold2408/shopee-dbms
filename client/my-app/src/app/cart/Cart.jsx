@@ -29,6 +29,10 @@ function calculateTotalPrice(quantity, price) {
   return quantity * price;
 }
 
+function calculator(price) {
+  return price + price * 0.11;
+}
+
 export default function Cart() {
   const [cart, setCart] = useState([]);
   const [userId, setUserId] = useState(null);
@@ -85,7 +89,6 @@ export default function Cart() {
           classify,
           quantity,
         });
-        console.log("response: ", response.data);
       }, 400);
 
       setTimer(newTimer);
@@ -123,7 +126,6 @@ export default function Cart() {
 
       const newTimer = setTimeout(async () => {
         const productIndex = cart[index];
-        console.log("productIndex: ", productIndex);
         const product_id = productIndex.product_id;
         const classify = productIndex.classify;
         const id = productIndex.cart_id;
@@ -134,7 +136,6 @@ export default function Cart() {
           classify,
           isChecked: !productIndex.isChecked,
         });
-        console.log("response: ", response.data);
       }, 400);
 
       setTimer(newTimer);
@@ -160,7 +161,6 @@ export default function Cart() {
           id: userId,
           isChecked: isChecked,
         });
-        console.log("response: ", response.data);
       }, 400);
 
       setTimer(newTimer);
@@ -181,11 +181,9 @@ export default function Cart() {
           const response = await client.delete(
             `/auth/products/cart/${userId}/${product_id}/${classify}`
           );
-          console.log("response: ", response.data);
           const responseData = await client.get(
             `/auth/products/cart/${userId}`
           );
-          console.log("responseData: ", responseData.data);
           const cartWithTotal = responseData.data.data.cart.map((item) => ({
             ...item,
             totalPrice: calculateTotalPrice(item.quantity, item.product_price),
@@ -200,7 +198,6 @@ export default function Cart() {
       }
     );
   };
-
 
   useEffect(() => {
     async function fetchProductToCart() {
@@ -305,9 +302,6 @@ export default function Cart() {
             <div className={clsx(styles.list__product)}>
               {/* Đổ product */}
               {cart.map((product, index) => {
-                {
-                  /* console.log("product: ", product); */
-                }
                 return (
                   <div
                     className={clsx(
@@ -366,7 +360,9 @@ export default function Cart() {
                       )}
                     >
                       <div className="flex items-center justify-center gap-3">
-                        <div className={clsx(styles.price__old)}>₫69.000</div>
+                        <div className={clsx(styles.price__old)}>
+                          ₫{formatCurrency(calculator(+product.product_price))}
+                        </div>
                         <div className={clsx(styles.price__new)}>
                           ₫{formatCurrency(+product?.product_price)}
                         </div>
