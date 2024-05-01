@@ -1,6 +1,10 @@
 const { errorResponse, successResponse } = require("../../../utils/response");
 const { User, Address, Cart, CartDetail } = require("../../../models/index");
+
+const { sequelize } = require('../../../models/index');
+
 const Cache = require("../../../core/cache");
+
 
 module.exports = {
   getUserCart: async (req, res) => {
@@ -282,5 +286,90 @@ module.exports = {
       console.error("Lỗi khi lấy sản phẩm trong giỏ hàng:", error);
       return errorResponse(res, 500, "Lỗi khi lấy sản phẩm trong giỏ hàng");
     }
+  },
+  postClickBuy: async (req, res) => {
+    try {
+        // Thực hiện xóa các mục có is_selected là true
+        const user_id = req.params.user_id;
+        await CartDetail.destroy({
+            where: {
+                cart_id: user_id,
+                is_selected: true
+            }
+        });
+
+        // Tạo trigger
+        // const triggerQuery = `
+        //     CREATE OR REPLACE FUNCTION update_quantity_stock()
+        //     RETURNS TRIGGER AS $$
+        //     BEGIN
+        //         IF OLD.is_selected THEN
+        //             UPDATE products
+        //             SET quantity_in_stock = quantity_in_stock - OLD.quantity
+        //             WHERE id = OLD.product_id;
+        //         END IF;
+        //         RETURN NULL;
+        //     END;
+        //     $$ LANGUAGE plpgsql;
+
+        //     CREATE TRIGGER upd_quantityStock_123 
+        //     AFTER DELETE ON cart_detail
+        //     FOR EACH ROW
+        //     EXECUTE FUNCTION update_quantity_stock();
+        // `;
+        // await sequelize.query(triggerQuery);
+
+        return errorResponse(res, 200, "Mua hàng thành công");
+    } catch (error) {
+        // Xử lý lỗi nếu có
+        console.error('Error:', error);
+        return errorResponse(res, 500, "Lỗi khi mua hàng");
+    }
+},
+  updateClickBuy: async (req, res) => {
+    try {
+    const checkExist = ` SELECT EXISTS (
+        SELECT 1
+        FROM information_schema.triggers
+        WHERE trigger_name = 'upd_quantitystock_123' AND event_object_table = 'cart_detail'
+    ); `
+      const triggerQuery = `
+            CREATE OR REPLACE FUNCTION update_quantity_stock()
+            RETURNS TRIGGER AS $$
+            BEGIN
+                IF OLD.is_selected THEN
+                    UPDATE products
+                    SET quantity_in_stock = quantity_in_stock - OLD.quantity
+                    WHERE id = OLD.product_id;
+                END IF;
+                RETURN NULL;
+            END;
+            $$ LANGUAGE plpgsql;
+
+            CREATE TRIGGER upd_quantityStock_123 
+            AFTER DELETE ON cart_detail
+            FOR EACH ROW
+            EXECUTE FUNCTION update_quantity_stock();
+        `;
+      const [result, metadata] = await sequelize.query(checkExist);
+        const exists = result[0].exists;
+        console.log(exists);
+
+        if (!exists) {
+            await sequelize.query(triggerQuery);
+        }
+      const user_id = req.params.user_id;
+      await CartDetail.destroy({
+          where: {
+              cart_id: user_id,
+              is_selected: true
+          }
+      });
+      // Tạo trigger
+      return errorResponse(res, 200, "Mua hàng thành công");
+  } catch (error) {
+      console.error('Error:', error);
+      return errorResponse(res, 500, "Lỗi khi mua hàng");
+  }
   },
 };
