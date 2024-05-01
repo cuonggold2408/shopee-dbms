@@ -101,9 +101,10 @@ router.post(
   cartController.addSelectedProductToCartAll
 );
 router.get("/v1/products/checkout/cart/:id", cartController.getCheckoutCart);
-
-
 router.get("/v1/testinsert", productsControllerMongo.testInsert);
+
+router.post("/v1/cart/click/buy/:user_id", cartController.updateClickBuy)
+
 
 // router.get('/testinsert', (req, res) => {
 //   const sp = new Evaluates({
