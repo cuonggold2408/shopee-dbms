@@ -38,7 +38,6 @@ export default function Login() {
     try {
       setIsLoading(true);
       const response = await client.post("/auth/login", userData);
-      // console.log(response);
       if (response.data.status !== 200 && response.data.status !== 202) {
         showToast("error", response.data.message);
         return;
@@ -85,7 +84,6 @@ export default function Login() {
     try {
       setIsLoading(true);
       const response = await client.post("/auth/verify", { data });
-      console.log(response);
       if (response.data.status !== 200) {
         showToast("error", response.data.message);
         return;
@@ -117,7 +115,6 @@ export default function Login() {
     try {
       setIsLoading(true);
       const response = await client.post("/auth/resend-otp", data);
-      console.log(response);
       if (response.data.status !== 200) {
         showToast("error", response.data.message);
         return;

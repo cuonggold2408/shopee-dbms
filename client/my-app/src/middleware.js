@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 
 export const middleware = async (request) => {
   //Request
-  // console.log(request);
   const pathname = request.nextUrl.pathname;
-  console.log(pathname);
 
   const accessTokenBoolean = request.cookies.has("access_token");
 

@@ -65,7 +65,6 @@ module.exports = {
       if (!user) {
         return errorResponse(res, 400, "Tài khoản không tồn tại");
       }
-      console.log("user: ", user);
       const checkPassword = bcrypt.compareSync(password, user.password);
       if (!checkPassword) {
         return errorResponse(
@@ -217,6 +216,7 @@ module.exports = {
   refresh: async (req, res) => {
     // Cap lai access token moi
     const { refresh_token: refreshToken } = req.body;
+    console.log(refreshToken);
     if (!refreshToken) {
       return errorResponse(
         res,
@@ -226,7 +226,7 @@ module.exports = {
       );
     }
     try {
-      decodeToken(refreshToken);
+      const decode = decodeToken(refreshToken);
       const userToken = await UserToken.findOne({
         where: {
           refresh_token: refreshToken,
@@ -235,15 +235,29 @@ module.exports = {
       if (!userToken) {
         throw new Error("Token not exists");
       }
-      const { user_id: userId } = userToken;
 
       // Khởi tạo accessToken mới
-      const accessToken = createAccessToken({ userId: userId });
-      return successResponse(res, 200, "success", {
+      const accessToken = createAccessToken({ userId: userToken.user_id });
+      const newRefreshToken = createRefreshToken();
+      console.log(newRefreshToken);
+      await UserToken.update(
+        {
+          refresh_token: newRefreshToken,
+        },
+        {
+          where: {
+            refresh_token: refreshToken,
+          },
+        }
+      );
+      const decodedAccess = decodeToken(accessToken);
+      return successResponse(res, 200, "Success", {
         accessToken,
-        refreshToken,
+        refreshToken: newRefreshToken,
+        expAccess: decodedAccess.exp,
       });
     } catch (e) {
+      console.log(e);
       return errorResponse(res, 401, "Unauthorized");
     }
   },
