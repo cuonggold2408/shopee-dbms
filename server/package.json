@@ -21,10 +21,11 @@
     "mongoose": "^8.3.2",
     "morgan": "~1.9.1",
     "mysql2": "^3.9.2",
+    "node-cron": "^3.0.3",
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
     "otp-generator": "^4.0.1",
-    "pg": "^8.11.3",
+    "pg": "^8.11.5",
     "pg-hstore": "^2.3.4",
     "redis": "^4.6.13",
     "sequelize": "^6.37.1"

@@ -11,6 +11,7 @@ const generator = require("generate-password");
 const sendMail = require("../../../utils/mail");
 const emailRegex = require("../../../utils/match_email");
 const { Op, where } = require("sequelize");
+const redis = require("../../../utils/redis");
 
 module.exports = {
   register: async (req, res) => {
@@ -195,21 +196,38 @@ module.exports = {
   },
   logout: async (req, res) => {
     const { accessToken, exp } = req.user;
-    try {
-      const [blacklist] = await Blacklist.findOrCreate({
-        where: {
-          token: accessToken,
-        },
-        defaults: {
-          token: accessToken,
-          expired: exp,
-        },
-      });
+    // try {
+    //   const [blacklist] = await Blacklist.findOrCreate({
+    //     where: {
+    //       token: accessToken,
+    //     },
+    //     defaults: {
+    //       token: accessToken,
+    //       expired: exp,
+    //     },
+    //   });
 
-      if (blacklist) {
-        return successResponse(res, 200, "Đăng xuất thành công");
-      }
+    //   if (blacklist) {
+    //     return successResponse(res, 200, "Đăng xuất thành công");
+    //   }
+    // } catch (e) {
+    //   return errorResponse(res, 500, "Server Error");
+    // }
+
+    try {
+      // Lưu token vào blacklist trong Redis
+      console.log("accessToken", accessToken);
+      const client = await redis;
+      await client.set(
+        `blacklist:${accessToken}`,
+        exp,
+        "EX",
+        exp - Math.floor(Date.now() / 1000)
+      );
+
+      return successResponse(res, 200, "Đăng xuất thành công");
     } catch (e) {
+      console.log(e);
       return errorResponse(res, 500, "Server Error");
     }
   },

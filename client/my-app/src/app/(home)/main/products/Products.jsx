@@ -12,6 +12,8 @@ import showToast from "@/app/helpers/Toastify";
 import { Pagination } from "@nextui-org/react";
 import { config } from "@/app/helpers/fetch_api/config";
 import { usePathname } from "next/navigation";
+import { ToastContainer } from "react-toastify";
+import { getToken } from "@/app/actions/gettoken.action";
 
 const { LIMIT_PAGE } = config;
 
@@ -24,7 +26,7 @@ function formatCurrency(value) {
     .replace(/,/g, "."); // Đổi dấu phẩy thành dấu chấm
 }
 
-export default function Products({ name }) {
+export default function Products({ name, pathName, keyWord }) {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
@@ -51,7 +53,7 @@ export default function Products({ name }) {
       }
       getProducts();
     }, [page]);
-  } else {
+  } else if (pathname.startsWith("/category")) {
     useEffect(() => {
       async function getFilterProducts() {
         try {
@@ -74,6 +76,45 @@ export default function Products({ name }) {
       }
       getFilterProducts();
     }, [page, name]);
+  } else if (pathname === pathName) {
+    useEffect(() => {
+      async function fetchFilterData() {
+        try {
+          const dataUser = await getToken();
+
+          if (!dataUser) {
+            const response = await client.get(
+              `/products/search/list?q=${keyWord}`
+            );
+            console.log("response", response);
+            if (response.data.status !== 200) {
+              router.push("/not-found");
+            }
+            const data = response.data.data;
+            if (data.products.length === 0) {
+              showToast("error", "Không tìm thấy sản phẩm nào");
+            }
+            setProducts(data.products);
+          } else {
+            const response = await client.get(
+              `/products/search/list?q=${keyWord}/${dataUser.userId}`
+            );
+            if (response.data.status !== 200) {
+              router.push("/not-found");
+            }
+            const data = response.data.data;
+            console.log("response.data", response.data);
+            if (data.products.length === 0) {
+              showToast("error", "Không tìm thấy sản phẩm nào");
+            }
+            setProducts(data.products);
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      }
+      fetchFilterData();
+    }, [keyWord]);
   }
 
   // Hàm để xử lý sự kiện khi người dùng muốn chuyển trang
@@ -97,7 +138,6 @@ export default function Products({ name }) {
             <div
               className={clsx(style["box-product"])}
               onClick={() => {
-                // router.push(`${slugify(product.product_name)}`);
                 router.push(`/product/${product.id}`);
               }}
               key={product.id}
@@ -112,6 +152,7 @@ export default function Products({ name }) {
                   className={clsx(style["img-product"])}
                   width={100}
                   height={100}
+                  priority
                 />
                 <div className={clsx("flex", "flex-col")}>
                   <h3 className={clsx(style["title-product"], "m-2")}>
@@ -147,6 +188,7 @@ export default function Products({ name }) {
           color="danger"
         />
       </div>
+      <ToastContainer />
     </Fragment>
   );
 }

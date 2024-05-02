@@ -7,6 +7,7 @@ import Fade from "@mui/material/Fade";
 import { useState } from "react";
 import { deleteToken } from "@/app/actions/deletetoken.action";
 import { useRouter } from "next/navigation";
+import { client } from "@/app/helpers/fetch_api/client";
 
 export default function Logout({ name }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -20,6 +21,8 @@ export default function Logout({ name }) {
   };
 
   const handleLogout = async () => {
+    const response = await client.post("/auth/logout");
+    console.log("response: ", response.data);
     await deleteToken();
     router.push("/login");
   };

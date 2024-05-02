@@ -130,7 +130,7 @@ export default function Product({ id }) {
         showToast("error", "Vui lòng chọn thông tin sản phẩm");
         return;
       }
-      // const delCache = await client.post("/clear-cache");
+      const delCache = await client.post("/clear-cache");
 
       const response = await client.post("/auth/products/cart", productToCart);
       if (!response.data.status === 201) {
@@ -146,7 +146,7 @@ export default function Product({ id }) {
   const handleBuyProduct = async () => {
     try {
       setIsLoading(true);
-      // const delCache = await client.post("/clear-cache");
+      const delCache = await client.post("/clear-cache");
       const response = await client.post("/auth/products/cart", productToCart);
       if (!response.data.status === 201) {
         showToast("error", response.data.message);

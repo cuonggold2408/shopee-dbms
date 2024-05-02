@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Fragment } from "react";
 import clsx from "clsx";
 import style from "./header.module.css";
@@ -12,7 +12,7 @@ import LanguageIcon from "@mui/icons-material/Language";
 import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getToken } from "@/app/actions/gettoken.action";
 import { client } from "@/app/helpers/fetch_api/client";
 import Logout from "@/app/(auth)/logout/Logout";
@@ -34,9 +34,26 @@ export default function Header() {
   const [cart, setCart] = useState([]);
   const [count, setCount] = useState(0);
   const [name, setName] = useState("");
+  const [search, setSearch] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [focus, setFocus] = useState(false);
+  const formRef = useRef();
   const router = useRouter();
   const pathname = usePathname();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const search = e.target.search.value;
+    if (search.trim() === "") {
+      showToast("error", "Vui lòng nhập từ khóa tìm kiếm");
+      return;
+    }
+    router.push(`/search?keyword=${encodeURIComponent(search)}`);
+  };
+
+  console.log("pathname", pathname);
+  const searchParamss = useSearchParams();
+  console.log("searchParams", searchParamss.get("keyword"));
 
   useEffect(() => {
     async function fetchDataUser() {
@@ -67,8 +84,42 @@ export default function Header() {
       }
     }
 
+    async function fetchSearch() {
+      try {
+        const dataUser = await getToken();
+        if (dataUser) {
+          const response = await client.get(`/users/search/${dataUser.userId}`);
+          const dataSearch = response.data.data;
+          console.log("dataSearch", dataSearch);
+          setSearch(dataSearch.data);
+        } else {
+          const response = await client.get("/users/search");
+          const dataSearch = response.data.data;
+          console.log("dataSearch", dataSearch);
+          setSearch(dataSearch.data);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
     fetchDataUser();
     fetchProductToCart();
+    fetchSearch();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (formRef.current && !formRef.current.contains(event.target)) {
+        setFocus(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   return (
@@ -142,58 +193,58 @@ export default function Header() {
                     </svg>
                   </Link>
                 </div>
-                <div className="flex flex-col">
-                  <div
+                <div className="flex flex-col relative">
+                  <form
                     className={clsx(
                       "flex",
                       "items-center",
                       style["search-bar"],
                       "mb-1"
                     )}
+                    style={{
+                      position: "relative",
+                    }}
+                    onSubmit={handleSearch}
+                    onFocus={() => setFocus(!focus)}
+                    ref={formRef}
                   >
                     <input
                       type="text"
                       placeholder="Tìm kiếm trên Shopee"
                       className={clsx(style["search-form"])}
+                      name="search"
                     />
-                    <button className={clsx(style["btn-search"])}>
+                    <button type="submit" className={clsx(style["btn-search"])}>
                       <FontAwesomeIcon
                         icon={faSearch}
                         className={clsx(style["search-icon"])}
                       />
                     </button>
-                  </div>
-                  <ul
+                  </form>
+                  <div
+                    className="absolute w-full bg-white"
                     style={{
-                      listStyle: "none",
-                      padding: "0",
-                      fontSize: "14px",
+                      top: "46px",
+                      zIndex: "9999",
                     }}
-                    className="flex items-center gap-3"
                   >
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Khẩu trang đen</Link>
-                    </li>
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Áo thun nam</Link>
-                    </li>
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Quần jean nam</Link>
-                    </li>
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Áo sơ mi nam</Link>
-                    </li>
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Giày thể thao</Link>
-                    </li>
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Giày cao gót</Link>
-                    </li>
-                    <li className="pt-1 pb-1">
-                      <Link href="/">Dép nam</Link>
-                    </li>
-                  </ul>
+                    {focus && (
+                      <ul className={("p-2", "border-gray-300")}>
+                        {search.map((item, index) => (
+                          <li
+                            key={index}
+                            className="text-black flex items-center justify-between p-2 border-b border-gray-300"
+                          >
+                            <Link href={`/search?keyword=${item}`}>
+                              <p>{item}</p>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 </div>
+
                 <div className={clsx(style.cart)}>
                   <ShoppingCartIcon
                     fontSize="large"
@@ -311,7 +362,7 @@ export default function Header() {
                     </h2>
                   </Link>
                 </div>
-                <div>
+                <form onSubmit={handleSearch}>
                   <input
                     type="text"
                     style={{
@@ -320,11 +371,12 @@ export default function Header() {
                       padding: "0 10px",
                       border: "2px solid #ee4d2d",
                     }}
+                    name="search"
                   />
-                  <button className={style.btn__search}>
+                  <button type="submit" className={style.btn__search}>
                     <SearchIcon />
                   </button>
-                </div>
+                </form>
               </div>
             </div>
           ) : (

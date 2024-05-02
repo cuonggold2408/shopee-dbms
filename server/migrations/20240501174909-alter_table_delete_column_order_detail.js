@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -19,6 +19,13 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.addColumn("transactions", "bought", { type: Sequelize.BOOLEAN, defaultValue: false });
+
+    await queryInterface.addColumn("transactions", "bought", {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+    });
+  },
+
   }
+
 };
