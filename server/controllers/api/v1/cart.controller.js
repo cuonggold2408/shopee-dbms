@@ -1,4 +1,5 @@
 const { errorResponse, successResponse } = require("../../../utils/response");
+
 const {
   User,
   Address,
@@ -6,6 +7,9 @@ const {
   CartDetail,
   Transaction,
 } = require("../../../models/index");
+
+const { User, Address, Cart, CartDetail, Transaction, Transport } = require("../../../models/index");
+
 
 const { sequelize } = require("../../../models/index");
 
@@ -114,6 +118,7 @@ module.exports = {
       // } else {
       //   resultCache = JSON.parse(resultCache);
       // }
+
       const { count, rows: cart } = await Cache.remember(
         "product_cart",
         60 * 60 * 24,
@@ -130,6 +135,7 @@ module.exports = {
       //           cart_id: id,
       //         },
       //       });
+
       return successResponse(
         res,
         201,
@@ -305,33 +311,13 @@ module.exports = {
           cart_id: user_id,
           is_selected: true,
         },
-      });
+        }
 
-      // Tạo trigger
-      // const triggerQuery = `
-      //     CREATE OR REPLACE FUNCTION update_quantity_stock()
-      //     RETURNS TRIGGER AS $$
-      //     BEGIN
-      //         IF OLD.is_selected THEN
-      //             UPDATE products
-      //             SET quantity_in_stock = quantity_in_stock - OLD.quantity
-      //             WHERE id = OLD.product_id;
-      //         END IF;
-      //         RETURN NULL;
-      //     END;
-      //     $$ LANGUAGE plpgsql;
-
-      //     CREATE TRIGGER upd_quantityStock_123
-      //     AFTER DELETE ON cart_detail
-      //     FOR EACH ROW
-      //     EXECUTE FUNCTION update_quantity_stock();
-      // `;
-      // await sequelize.query(triggerQuery);
-
-      return errorResponse(res, 200, "Mua hàng thành công");
+      });   
+      return successResponse(res, 200, "Mua hàng thành công");
     } catch (error) {
       // Xử lý lỗi nếu có
-      console.error("Error:", error);
+      console.error('Error:', error);
       return errorResponse(res, 500, "Lỗi khi mua hàng");
     }
   },
@@ -388,7 +374,7 @@ module.exports = {
       const [resultins, metadatains] = await sequelize.query(checkExistinsert);
       const existsins = resultins[0].exists;
       console.log(existsins);
-
+      
       if (!exists) {
         await sequelize.query(triggerQuery);
       }
@@ -396,16 +382,16 @@ module.exports = {
         await sequelize.query(insertOrderDetail);
       }
       const user_id = req.params.user_id;
+      console.log("user_id: ", user_id);
       await CartDetail.destroy({
         where: {
           cart_id: user_id,
           is_selected: true,
         },
       });
-      // Tạo trigger
-      return errorResponse(res, 200, "Mua hàng thành công");
+      return successResponse(res, 200, "Mua hàng thành công");
     } catch (error) {
-      console.error("Error:", error);
+      console.error('Error:', error);
       return errorResponse(res, 500, "Lỗi khi mua hàng");
     }
   },
@@ -417,13 +403,21 @@ module.exports = {
         where: {
           cart_id: user_id,
         },
+
       });
-      return errorResponse(
-        res,
-        200,
-        "Lấy đơn hàng đã mua thành công ",
-        transaction
-      );
+
+        include: [
+          {
+            model: Transport,
+            as: 'transport',
+            attributes: ['status_transport'],
+          },
+        ],
+
+      });
+
+      return successResponse(res, 200, "Lấy đơn hàng đã mua thành công ", transaction);
+
     } catch (error) {
       console.log(error);
       return errorResponse(res, 500, "Lỗi khi lấy đơn đã mua");

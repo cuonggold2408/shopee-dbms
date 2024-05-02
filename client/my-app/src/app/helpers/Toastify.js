@@ -7,27 +7,27 @@ const showToast = (type, message, callback) => {
     case "success":
       toast.success(message, {
         position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
+        autoClose: 2000,
         onClose: callback,
       });
       break;
     case "warn":
       toast.warn(message, {
         position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
+        autoClose: 2000,
         onClose: callback,
       });
       break;
     case "error":
       toast.error(message, {
         position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
+        autoClose: 2000,
       });
       break;
     case "info":
       toast.info(message, {
         position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
+        autoClose: 2000,
       });
       break;
     case "confirm":
@@ -63,7 +63,7 @@ const showToast = (type, message, callback) => {
     default:
       toast(message, {
         position: toast.POSITION.TOP_RIGHT,
-        autoClose: 3000,
+        autoClose: 2000,
       });
       break;
   }

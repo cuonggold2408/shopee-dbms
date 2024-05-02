@@ -32,3 +32,12 @@
 .total__price {
     color: #ee4d2d;
 }
+
+.review__product {
+    border: 0;
+    color: #fff;
+    border-radius: 2px;
+    padding: 5px 10px;
+    background-color: #5EBBC4;
+
+}

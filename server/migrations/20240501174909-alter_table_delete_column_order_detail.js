@@ -19,9 +19,13 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
+
     await queryInterface.addColumn("transactions", "bought", {
       type: Sequelize.BOOLEAN,
       defaultValue: false,
     });
   },
+
+  }
+
 };

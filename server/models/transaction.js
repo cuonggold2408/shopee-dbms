@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Transaction.belongsTo(models.Transport, { as: 'transport', foreignKey: 'transport_id' });
     }
   }
   Transaction.init(
@@ -46,12 +47,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       transport_id: {
         type: DataTypes.STRING,
-        references: {
-          model: {
-            tableName: "transports",
-          },
-        },
         defaultValue: 1,
+        onUpdate: "CASCADE",
+        references: {
+          model: "transports",
+          key: "id",
+        },
       },
       created_at: {
         allowNull: false,
