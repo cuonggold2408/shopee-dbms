@@ -254,9 +254,7 @@ export default function Product({ id }) {
           <div className="flex justify-between bg-white px-4 py-4">
             <div className={clsx(style.product__img)}>
               <Image src={mainImage} alt="product" width={450} height={450} />
-              {/* <div>
-                <SliderComponent onImageHover={setMainImage} />
-              </div> */}
+
             </div>
             <div className={clsx(style.product__desc)}>
               <h2 className="mb-2">{product?.product_name}</h2>
@@ -334,8 +332,8 @@ export default function Product({ id }) {
                             onMouseOver={() =>
                               classifyIndex === 0
                                 ? handleColorHover(
-                                    classify?.ProductImages[0]?.image_link
-                                  )
+                                  classify?.ProductImages[0]?.image_link
+                                )
                                 : null
                             }
                           >
@@ -501,36 +499,15 @@ export default function Product({ id }) {
                   <div className="flex flex-col gap-1">
                     <h3>{evaluate?.username}</h3>
                     <div className="flex gap-1">
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        width={15}
-                        height={15}
-                        className={style.vote__icon}
-                      />
+                      {Array(evaluate.voted).fill().map((_, index) => (
+                        <FontAwesomeIcon
+                          key={index}
+                          icon={faStar}
+                          width={15}
+                          height={15}
+                          className={style.vote__icon}
+                        />
+                      ))}
                     </div>
                     <div
                       className="flex gap-3"

@@ -16,9 +16,62 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: insert_order_detail(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.insert_order_detail() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+        BEGIN
+            INSERT INTO transactions (id, cart_id, product_id, image_product, product_name, 
+            product_price, quantity, classify, total_price, created_at, updated_at)
+            VALUES (OLD.id, OLD.cart_id, OLD.product_id, OLD.image_product, OLD.product_name, 
+            OLD.product_price, OLD.quantity, OLD.classify, OLD.total_price, 
+            NOW(), NOW());
+            RETURN OLD;
+        END;
+        $$;
+
+
+ALTER FUNCTION public.insert_order_detail() OWNER TO postgres;
+
+--
+-- Name: update_quantity_stock(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.update_quantity_stock() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                IF OLD.is_selected THEN
+                    UPDATE products
+                    SET quantity_in_stock = quantity_in_stock - OLD.quantity
+                    WHERE id = OLD.product_id;
+                END IF;
+                RETURN NULL;
+            END;
+            $$;
+
+
+ALTER FUNCTION public.update_quantity_stock() OWNER TO postgres;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: ProductImages; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ProductImages" (
+    id integer,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public."ProductImages" OWNER TO postgres;
 
 --
 -- Name: SequelizeMeta; Type: TABLE; Schema: public; Owner: postgres
@@ -44,7 +97,8 @@ CREATE TABLE public.addresses (
     provine character varying(100),
     default_address boolean,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    is_selected boolean DEFAULT false
 );
 
 
@@ -110,6 +164,50 @@ ALTER SEQUENCE public.blacklists_id_seq OWNED BY public.blacklists.id;
 
 
 --
+-- Name: cart_detail; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.cart_detail (
+    id integer NOT NULL,
+    cart_id integer,
+    product_id integer,
+    image_product text,
+    product_name text,
+    product_price character varying(255),
+    quantity integer,
+    classify text,
+    total_price character varying(255),
+    is_selected boolean DEFAULT true,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.cart_detail OWNER TO postgres;
+
+--
+-- Name: cart_detail_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.cart_detail_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.cart_detail_id_seq OWNER TO postgres;
+
+--
+-- Name: cart_detail_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.cart_detail_id_seq OWNED BY public.cart_detail.id;
+
+
+--
 -- Name: carts; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -153,7 +251,8 @@ CREATE TABLE public.categories (
     id integer NOT NULL,
     category_name character varying(100),
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    category_image character varying(255)
 );
 
 
@@ -216,6 +315,50 @@ ALTER SEQUENCE public.classifyoptions_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.classifyoptions_id_seq OWNED BY public.classifyoptions.id;
+
+
+--
+-- Name: transactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.transactions (
+    id integer NOT NULL,
+    cart_id integer,
+    product_id integer,
+    image_product text,
+    product_name text,
+    product_price character varying(255),
+    quantity integer,
+    classify text,
+    total_price character varying(255),
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    transport_id integer DEFAULT 1
+);
+
+
+ALTER TABLE public.transactions OWNER TO postgres;
+
+--
+-- Name: order_detail_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.order_detail_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.order_detail_id_seq OWNER TO postgres;
+
+--
+-- Name: order_detail_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.order_detail_id_seq OWNED BY public.transactions.id;
 
 
 --
@@ -370,6 +513,42 @@ ALTER SEQUENCE public.products_id_seq OWNED BY public.products.id;
 
 
 --
+-- Name: transports; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.transports (
+    id integer NOT NULL,
+    status_transport character varying(255),
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.transports OWNER TO postgres;
+
+--
+-- Name: transports_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.transports_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.transports_id_seq OWNER TO postgres;
+
+--
+-- Name: transports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.transports_id_seq OWNED BY public.transports.id;
+
+
+--
 -- Name: user_tokens; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -379,7 +558,7 @@ CREATE TABLE public.user_tokens (
     device_name character varying(255),
     refresh_token character varying(255),
     otp character varying(4),
-    expired_otp timestamp with time zone NOT NULL,
+    expired_otp timestamp with time zone,
     status boolean,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
@@ -464,6 +643,13 @@ ALTER TABLE ONLY public.blacklists ALTER COLUMN id SET DEFAULT nextval('public.b
 
 
 --
+-- Name: cart_detail id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_detail ALTER COLUMN id SET DEFAULT nextval('public.cart_detail_id_seq'::regclass);
+
+
+--
 -- Name: carts id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -513,6 +699,20 @@ ALTER TABLE ONLY public.products ALTER COLUMN id SET DEFAULT nextval('public.pro
 
 
 --
+-- Name: transactions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transactions ALTER COLUMN id SET DEFAULT nextval('public.order_detail_id_seq'::regclass);
+
+
+--
+-- Name: transports id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transports ALTER COLUMN id SET DEFAULT nextval('public.transports_id_seq'::regclass);
+
+
+--
 -- Name: user_tokens id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -524,6 +724,14 @@ ALTER TABLE ONLY public.user_tokens ALTER COLUMN id SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN users_id SET DEFAULT nextval('public.users_users_id_seq'::regclass);
+
+
+--
+-- Data for Name: ProductImages; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public."ProductImages" (id, "createdAt", "updatedAt") FROM stdin;
+\.
 
 
 --
@@ -543,6 +751,16 @@ COPY public."SequelizeMeta" (name) FROM stdin;
 20240406084345-create-product-classify.js
 20240406171503-create-classify-option.js
 20240409045013-create-product-image.js
+20240409044758-create-product-image.js
+20240421162625-create-cart-detail.js
+20240429125239-alter_table_categories_add_image.js
+20240429201515-alter_table_addresses_add_column_is_selected.js
+20240501044813-create-order-detail.js
+20240501171353-alter_table_cartdetail_add_column_transportid.js
+20240501171943-create-transport.js
+20240501174227-rename_table_cart_detail.js
+20240501174909-alter_table_delete_column_order_detail.js
+20240502052303-add_foreign_key_transport_id_table_transacsions.js
 \.
 
 
@@ -550,7 +768,9 @@ COPY public."SequelizeMeta" (name) FROM stdin;
 -- Data for Name: addresses; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.addresses (address_id, users_id, address_line, phone_receiver, name_receiver, provine, default_address, created_at, updated_at) FROM stdin;
+COPY public.addresses (address_id, users_id, address_line, phone_receiver, name_receiver, provine, default_address, created_at, updated_at, is_selected) FROM stdin;
+2	5	chuchobac ne	0913245678	Nguyễn Xuân Bách	\N	f	2024-04-30 20:31:29.961+07	2024-05-02 17:25:20.16+07	f
+1	5	22321312312sdasdasdasdas	0325453480	Nguyễn Xuân Bách 1	\N	t	2024-04-30 20:22:30.106+07	2024-05-02 17:25:20.16+07	t
 \.
 
 
@@ -563,10 +783,20 @@ COPY public.blacklists (id, token, expired, created_at, updated_at) FROM stdin;
 
 
 --
+-- Data for Name: cart_detail; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.cart_detail (id, cart_id, product_id, image_product, product_name, product_price, quantity, classify, total_price, is_selected, created_at, updated_at) FROM stdin;
+9	5	6	https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-ltdkkyqge9qc2f	Laptop ASUS Expertbook B1 B1402CBA NK1535W| i3-1215U| 8GB DDR4|256GB SSD	9990000	3	black	9990000	f	2024-05-02 14:50:16.895+07	2024-05-02 17:25:10.525+07
+\.
+
+
+--
 -- Data for Name: carts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.carts (id, users_id, created_at, updated_at) FROM stdin;
+1	5	2024-04-24 16:23:51.1+07	2024-04-24 16:23:51.1+07
 \.
 
 
@@ -574,13 +804,13 @@ COPY public.carts (id, users_id, created_at, updated_at) FROM stdin;
 -- Data for Name: categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.categories (id, category_name, created_at, updated_at) FROM stdin;
-1	Laptop	2024-04-09 12:28:57.255787+07	2024-04-09 12:28:57.255787+07
-2	Đồng hồ	2024-04-09 12:29:46.987849+07	2024-04-09 12:29:46.987849+07
-3	Điện thoại	2024-04-09 19:42:01.597387+07	2024-04-09 19:42:01.597387+07
-4	Thiết bị điện tử	2024-04-09 20:40:13.597051+07	2024-04-09 20:40:13.597051+07
-5	Ba lô, túi, ví 	2024-04-10 13:40:18.021224+07	2024-04-10 13:40:18.021224+07
-6	Thể thao và du lịch\n	2024-04-10 14:39:08.198257+07	2024-04-10 14:39:08.198257+07
+COPY public.categories (id, category_name, created_at, updated_at, category_image) FROM stdin;
+1	Laptop	2024-04-09 12:28:57.255787+07	2024-04-09 12:28:57.255787+07	https://down-vn.img.susercontent.com/file/c3f3edfaa9f6dafc4825b77d8449999d_tn
+2	Đồng hồ	2024-04-09 12:29:46.987849+07	2024-04-09 12:29:46.987849+07	https://down-vn.img.susercontent.com/file/86c294aae72ca1db5f541790f7796260_tn
+3	Điện thoại	2024-04-09 19:42:01.597387+07	2024-04-09 19:42:01.597387+07	https://down-vn.img.susercontent.com/file/31234a27876fb89cd522d7e3db1ba5ca_tn
+4	Thiết bị điện tử	2024-04-09 20:40:13.597051+07	2024-04-09 20:40:13.597051+07	https://down-vn.img.susercontent.com/file/978b9e4cb61c611aaaf58664fae133c5_tn
+6	Thể thao và du lịch	2024-04-10 14:39:08.198257+07	2024-04-10 14:39:08.198257+07	https://down-vn.img.susercontent.com/file/6cb7e633f8b63757463b676bd19a50e4_tn
+5	Ba lô & túi & ví	2024-04-10 13:40:18.021224+07	2024-04-10 13:40:18.021224+07	https://down-vn.img.susercontent.com/file/fa6ada2555e8e51f369718bbc92ccc52_tn
 \.
 
 
@@ -1062,14 +1292,12 @@ COPY public.productlines (id, category_id, productline_name, created_at, updated
 
 COPY public.products (id, productline_id, product_name, description, quantity_in_stock, price, created_at, updated_at) FROM stdin;
 1	1	Laptop HP 15s-Fq5231TU ( 8U241PA )Silver I3 1215U 8GB 256GB SSD 15.6 Inch FHD 3 Cell Win 11 Home 1Yr	Thông Số Kỹ Thuật\n\nHãng sản xuất HP \n\nModel 15s-fq5231TU\n\nPart Number 8U241PA \n\nMàu sắc Natural Silver\n\nBảo hành 12 tháng\n\nBộ vi xử lý Intel® Core™ i3-1215U (up to 4.4 GHz with Intel® Turbo Boost Technology, 10 MB L3 cache, 6 cores, 8 threads)\n\nRAM 8 GB DDR4-3200 MHz RAM (1 x 8 GB)VGAIntel UHD Graphics\n\nỔ cứng 256GB PCIe® NVMe™ M.2 SSDMàn hình39.6 cm (15.6") diagonal, FHD (1920 x 1080), micro-edge, anti-glare, 250 nits, 45% NTSC\n\nCổng giao tiếp 1 USB Type-C® 5Gbps signaling rate (supports data transfer only and does not support charging or external monitors);\n\n2 USB Type-A 5Gbps signaling rate;\n\n1 AC smart pin;\n\n1 HDMI 1.4b;\n\n1 headphone/microphone combo\n\nKết nối mạng Realtek RTL8822CE 802.11a/b/g/n/ac (2x2) Wi-Fi® and Bluetooth® 5 wireless cardPin3-cell, 41 Wh Li-ion,Up to 7 hours and 30 minutes \n\nKích thước 35.85 x 24.2 x 1.79 cm \n\nCân nặng1.69 kg\n\nHệ điều hành Win 11 Home 	100	9490000	2024-04-09 12:44:14.309358+07	2024-04-09 12:44:14.309358+07
-2	1	Laptop HP 240 G9 6L1X7PA (Core i3-1215U | 8GB | 256GB |14 inch FHD| Win11)	Laptop HP 240 G9 6L1X7PA (Intel Core i3-1215U | 8GB | 256GB | Intel Iris Xe | 14 inch FHD | Win 11 | Bạc)\n\n\n\nCPU: Intel Core i3-1215U (upto 4.40 GHz, 10MB)\n\nRAM: 8GB (1 x 8GB) DDR4-3200MHz (2 khe)\n\nỔ cứng: 256GB PCIe NVMe SSD\n\nVGA: Intel UHD Graphics\n\nMàn hình: 14 inch FullHD (1920 x 1080), IPS, narrow bezel, anti-glare, 250 nits, 45% NTSC\n\nPin: 3-cell, 41 Wh Li-ion\n\nCân nặng: 1.47 kg\n\nMàu sắc: Bạc\n\nBảo hành : 12 tháng \n\n\n\n=============\n\n***Sản phẩm có xuất hóa đơn VAT , quý khách hàng xin cung cấp thông tin lấy hóa đơn (email và thông tin MST) trước khi nhận hàng . Shop sẽ gửi hóa đơn VAT qua email trong vòng 3 ngày sau khi đơn hàng nhận thành công. \n\n\n\nAnPhatPC - Hơn 19 năm kinh nghiệm phân phối sản phẩm IT.\n\n\n\nCam kết bảo hành \n\n- Cam kết 100% chính hãng.\n\n- Bảo hành theo chính sách của nhà sản xuất: Tem serial trên sản phẩm + Phiếu bảo hành\n\n- Đổi trả trong vòng 7 ngày: Lỗi nhà sản xuất, hư hỏng trong quá trình vận chuyển, giao sai hoặc thiếu phụ kiện.\n\n- Hotline Chăm sóc Khách hàng: 0902.11.12.13\n\n- Facebook Page: https://www.facebook.com/An-Ph%C3%A1t-Computer-Shopee-112629741455805 \n\n- Youtube : https://www.youtube.com/c/AnPhatComputerpc\n\n\n\nĐịa chỉ shop : \n\n\n\n1. 49 Thái Hà - Đống Đa - Hà Nội\n\n2. 151 Lê Thanh Nghị - Hai Bà Trưng - Hà Nội\n\n3. 63 Trần Thái Tông - Phường Dịch Vọng - Cầu Giấy - Hà Nội\n\n4. 158 - 160 Lý Thường Kiệt P.14 - Q.10 - TPHCM\n\n5. 330-332 Võ Văn Tần, Phường 5, Q.3, TPHCM\n\n6. Số 4 Nguyễn Văn Cừ - Ninh Xá - Thành phố Bắc Ninh	100	9990000	2024-04-09 12:44:14.309358+07	2024-04-09 12:44:14.309358+07
-3	1	[Nhập ELHP15 giảm 15%] LapTop HP Pavilion 15 eg2059TU-6K789PA|i5 1240P|8GB | 256GB SSD | 15.6" FHD IPS | Win 11	THÔNG SỐ KỸ THUẬT\n\nCPU\t\t\t12th Generation Intel® Alder Lake Core™ i5 _ 1240P Processor (1.70 GHz, 12MB Cache Up to 4.40 GHz, 12 Cores 16 Threads)\n\nMemory\t\t\t8GB DDr4 Bus 3200Mhz (2 Slot, 4GB x 02, Dual Chanel)\n\nHard Disk\t\t\t256GB PCIe® NVMe™ M.2 SSD\n\nVGA\t\t\tIntegrated Intel® Iris® Xe Graphics\n\nDisplay\t\t\t15.6 inch Diagonal Full HD (1920 x 1080) IPS Micro Edge BrightView 250 Nits 45% NTSC\n\nOther\t\t\tHP Wide Vision 720p HD Camera, Audio B&O Dual Speakers, HP Audio Boost, Multi Format SD Media Card Reader, Headphone / Microphone Combo, HDMI 2.0, SuperSpeed USB Type A 5Gbps Signaling Rate, SuperSpeed USB Type C® 10Gbps Signaling Rate (USB Power Delivery, DisplayPort™ 1.4, HP Sleep and Charge)\n\nWireless\t\t\tWi-Fi 6 MT7921 (2x2) and Bluetooth® 5.2 combo\n\nBattery\t\t\t3 Cells 41 Whrs Battery\n\nWeight\t\t\t1,70 Kg\n\nSoftWare\t\t\tWindows 11 Home SL 64bit\n\nXuất xứ\t\t\tBrand New 100%, Hàng Phân Phối Chính Hãng Tại Việt Nam, Bảo Hành Chính Hãng\n\nMàu sắc\t\t\tAluminum Silver\n\nBảo hành\t\t\t12 tháng\n\nBộ sản phẩm\t\t\tThùng máy, Máy tính, Bộ sạc, Hướng dẫn sử dụng\n\n-----------------------------------------------------------------------------------------------------------------------------------------------\n\nMÔ TẢ TÍNH NĂNG\n\nLaptop HP Pavilion 15-eg2059TU được thiết kế vừa chắc chắn bền bỉ, vừa tạo cảm giác dễ chịu, mát tay cho người dùng nhờ lớp chiếu nghỉ tay bằng kim loại. Máy có trọng lượng nhẹ thuận lợi cho bạn trong quá trình di chuyển, với kích thước này bạn có thể đặt nó nằm gọn trong chiếc balo mang theo bên mình.\n\n\n\nMàn hình 15.6 inch với độ phân giải Full HD IPS (1920 x 1080) đem đến chất lượng hình ảnh hiển thị sắc nét, giúp màn hình có độ sáng cao, màu sắc khá tốt.\n\n\n\nĐi kèm với CPU Intel Core i5-1240P là card đồ họa tích hợp Intel Iris Xe Graphics hỗ trợ đáng kể khả năng xử lý đa tác vụ của máy, cho phép người dùng sử dụng các ứng dụng Photoshop, AI,... một cách mượt mà. Ổ cứng SSD 256GB PCIe NVMe đem đến cho người dùng một không gian lưu trữ rộng rãi, đồng thời đẩy nhanh tốc độ truy xuất dữ liệu, giúp mở máy và khởi động ứng dụng một cách nhanh chóng.\n\n\n\nDọc hai bên thành máy là các cổng kết nối thông dụng giúp bạn kết nối dễ dàng với các thiết bị ngoại vi. Ngoài ra kết nối Wi-Fi và Bluetooth hiện đại cũng được trang bị, đảm bảo các kết nối trực tuyến của bạn luôn được ổn định, mượt mà.\n\n\n\nBàn phím laptop được thiết kế hợp lý, hành trình phím sâu, nút bấm êm, độ nảy tốt và được tích hợp bàn phím số giúp việc nhập liệu trở nên dễ dàng, chính xác.	100	14790000	2024-04-09 12:45:15.368888+07	2024-04-09 12:45:15.368888+07
 4	2	Laptop Asus Vivobook 15X A1503ZA-L1422W i5-12500H|Xe Graphics|8GB|512GB|15.6'' OLED\n\n4.5\n\n15\nRatings\n35\nSold	Laptop Asus Vivobook 15X A1503ZA-L1422W i5-12500H|Xe Graphics|8GB|512GB|15.6'' OLED\n\n4.5\n\n15\nRatings\n35\nSold	100	15950000	2024-04-09 12:50:42.837209+07	2024-04-09 12:50:42.837209+07
 6	2	Laptop ASUS Expertbook B1 B1402CBA NK1535W| i3-1215U| 8GB DDR4|256GB SSD	Product Description\nThông số kĩ thuật:\n\n\n\nCPU\tIntel® Core™ i3-1215U Processor 1.2 GHz (10M Cache, up to 4.4 GHz, 6 cores)\n\nRam\t8GB DDR4 3200MHz (8GB onboard + 1 slot, nâng cấp tối đa 16GB)\n\nỔ cứng\t256GB PCIE G3 SSD (Còn trống 1 khe 2.5" HDD up to 1TB)\n\nCard đồ họa\tIntel® UHD Graphics\n\nMàn hình\t14.0-inch, FHD (1920 x 1080) 16:9, TN, Màn hình chống chói, Đèn nền LED, 220nits, NTSC: 45%, Tỷ lệ màn hình trên kích thước: 81%\n\nCổng giao tiếp\t1x USB 2.0 Type-A\n\n1x USB 3.2 Thế hệ 1 Type-A\n\n1x USB 3.2 Gen 1 Type-C hỗ trợ sạc chuẩn Power Delivery\n\n1x USB 3.2 thế hệ 2 Type-C hỗ trợ màn hình / sạc nhanh\n\n1x HDMI 1.4, lên đến 1920x1080/60Hz\n\n1 Jack cắm âm thanh combo 3.5mm\n\n1x RJ45 Gigabit Ethernet\n\nBàn phím\tBàn phím dạng Chiclet, Hành trình phím 1,4mm, Bàn phím chống tràn đổ\n\nChuẩn LAN\t100/1000M\n\nChuẩn WIFI\tWi-Fi 6(802.11ax) (Dual band) 2*2\n\nBluetooth\tBluetooth® 5.2 Wireless Card\n\nAudio\tBuilt-in speaker\n\nBuilt-in array microphone\n\nBảo mật\tCảm biến bảo mật vân tay tích hợp phím nguồn\n\nKensington Security Slot™\n\nBảo vệ mật khẩu người dùng BIOS\n\nComputrace ready from BIOS\n\nBảo vệ mật khẩu người dùng trên HDD\n\nTrusted Platform Module (TPM) 2.0\n\nWebcam\tCamera HD 720p\n\nVới tấm che webcam vật lý\n\nHệ điều hành\tWindows 11 Home\n\nPin\t42WHrs, 3S1P, 3-cell Li-ion\n\nTrọng lượng\t1.49 kg\n\nMàu sắc\tĐen Tinh Tú\n\nKích thước\t32.69 x 21.45 x 1.99 ~ 1.99 cm (12.87" x 8.44" x 0.78" ~ 0.78")\n\n——————————————————————————————\n\n\n\nĐIỀU KIỆN BẢO HÀNH SẢN PHẨM:\n\n\n\n• Những sản phẩm đủ điều kiện bảo hành\n\n\n\n- Sản phẩm nếu có tem niêm phong (seal) trên sản phẩm thì tem niêm phong phải còn nguyên vẹn.\n\n\n\n- Đối với sản phẩm bảo hành trên hộp: sản phẩm còn đầy đủ hộp.\n\n\n\n- Sản phẩm không trầy xước, cấn móp, bể, vỡ, biến dạng so với ban đầu.\n\n\n\n• Những sản phẩm không đủ điều kiện bảo hành\n\n\n\n- Hết thời hạn bảo hành.\n\n\n\n- Không có tem niêm phong, hoặc bị tẩy xóa, không còn nguyên dạng ban đầu.\n\n\n\n- Bị tác động vật lý làm trầy xước, cong vênh, rạn nứt, bể vỡ trong quá trình quá trình sử dụng.\n\n\n\n- Bị hư hỏng do tự ý thảo mở, sửa chữa, thay đổi cấu trúc sản phẩm bên trong mà chưa có sự xác nhận đồng ý hoặc giám sát bởi kỹ thuật viên GearVN.\n\n\n\n- Bị hư hỏng, chập, cháy do sử dụng sai mục đích, tự ý tháo, lắp đặt không tuân theo các hướng dẫn sử dụng đính kèm theo sản phẩm.\n\n\n\n- Bị hư hỏng do côn trùng xâm nhập (chuột, gián, kiến, mối…)\n\n\n\n- Bị hư hỏng do thiên tai, hỏa hoạn, lụt lội, sét đánh, rỉ sét, hao mòn do môi trường gây ra.\n\n\n\n***GearVN hỗ trợ tiếp nhận & sửa chữa sản phẩm (Có thu phí đối với khách hàng) với những sản phẩm không đủ điều kiện bảo hành.	100	9990000	2024-04-09 12:53:21.242204+07	2024-04-09 12:53:21.242204+07
 17	7	Đồng hồ casio nữ dây nhựa GSHOCK GMA-S2100-1ADR chính hãng	Các tính năng:\n\nDòng này là phiên bản thu nhỏ của chiếc GA-2100 để tạo nên thiết kế đơn giản và thanh mảnh.\nGờ bát giác, mặt đồng hồ phẳng, vạch giờ đơn giản và cấu trúc bảo vệ lõi carbon vốn là những tính năng đặc biệt của GA-2100 hiện đã có trong cấu hình nhỏ gọn.\n\nĐặc điểm kỹ thuật:\n\nVật liệu vỏ / vành bezel: Cacbon / Nhựa\nDây đeo bằng nhựa\nMặt kính khoáng\nNeobrite\nChống va đập\nCấu trúc bảo vệ lõi cacbon\nChống nước ở độ sâu 200 mét\nHai đèn LED\nĐèn LED cho mặt đồng hồ (Chiếu sáng cực mạnh, thời lượng chiếu sáng có thể lựa chọn (1,5 giây hoặc 3 giây), phát sáng sau)\nĐèn LED cực tím cho màn hình số (Chiếu sáng cực mạnh, thời lượng chiếu sáng có thể lựa chọn (1,5 giây hoặc 3 giây), phát sáng sau)\nGiờ thế giới\n31 múi giờ (48 thành phố + giờ phối hợp quốc tế), bật/tắt tiết kiệm ánh sáng ban ngày\nĐồng hồ bấm giờ 1/100 giây\nKhả năng đo:\n00’00”00~59’59”99 (cho 60 phút đầu tiên)\n1:00’00”~23:59’59” (sau 60 phút)\nĐơn vị đo:\n1/100 giây (cho 60 phút đầu tiên)\n1 giây (sau 60 phút)\nChế độ đo: Thời gian đã trôi qua, ngắt giờ, thời gian về đích thứ nhất – thứ hai\nĐồng hồ đếm ngược\nĐơn vị đo: 1 giây\nKhoảng đếm ngược: 24 giờ\nKhoảng cài đặt thời gian bắt đầu đếm ngược: 1 giây đến 24 giờ (khoảng tăng 1 giây, khoảng tăng 1 phút và khoảng tăng 1 giờ)\n5 chế độ báo thức hàng ngày\nTín hiệu thời gian hàng giờ\nTính năng chuyển kim\nLịch hoàn toàn tự động (đến năm 2099)\nĐịnh dạng giờ 12/24\nBật/tắt âm nhấn nút\nGiờ hiện hành thông thường\nĐồng hồ kim: 2 kim (giờ, phút (kim di chuyển 20 giây một lần)), 1 mặt số (ngày)\nĐồng hồ kỹ thuật số: Giờ, phút, giây, giờ chiều/tối, tháng, ngày\nĐộ chính xác: ±15 giây một tháng\nTuổi thọ pin xấp xỉ: 3 năm đối với pin SR726W × 2\nKích thước vỏ / Tổng trọng lượng\nKích thước vỏ : 46,2×42,9×11,2mm\nTổng trọng lượng : 41g\n\n*CHÍNH SÁCH BẢO HÀNH:\n- Bảo hành 05 năm chính hãng Casio toàn quốc\n- Bảo hành pin trọn đời tại shop YouWatch \n\n#casio #casiohuyenthoai #casioanhkhue #casioankhanh #ak #donghonam #donghonu #unisex #ae1200whd #casiochinhhang #casiogiare #g-shock #edifice #babyg #mtp #ltp #mq #lq	100	2901600	2024-04-09 14:45:59.327071+07	2024-04-09 14:45:59.327071+07
 18	7	Đồng hồ Casio nam điện tử AE-1200WHD-1AVDF dây kim loại chính hãng	Casio AE-1200WHD-1AVDF là chiếc đồng hồ Casio bán chạy nhất tại Việt Nam. Có tuổi thọ pin lên đến 10 năm, thiết kế đẹp cổ điển vượt năm tháng và cung cấp hàng loạt chức năng đỉnh-của-đỉnh, đồng hồ Casio AE1200WHD hiện đang là tiêu điểm chú ý của toàn thế giới.\n\n\n\nCASIO AE-1200WHD-1AVDF - SIÊU PHẨM GÂY SỐT TRÊN TOÀN THẾ GIỚI\n\n\n\n\n\nTHÔNG SỐ KỸ THUẬT:\n\n♦ Thương Hiệu: Casio\n\n♦ Số Hiệu Sản Phẩm: AE-1200WHD-1AVDF\n\n♦ Xuất Xứ: Nhật Bản\n\n♦ Giới Tính: Nam\n\n♦ Kính: Resin Glass (Kính Nhựa)\n\n♦ Máy: Quartz (Pin)\n\n♦ Bảo Hành Quốc Tế: 1 Năm\n\n♦ Đường Kính Mặt Số: 45 mm x 42.1 mm\n\n♦ Bề Dày Mặt Số: 12.5 mm\n\n♦ Màu Mặt Số: Đen\n\n♦ Chống Nước: 10 ATM\n\n\n\n\n\nTÍNH NĂNG NỔI BẬT:\n\n✔ Đèn LED\n\n✔ Nhiều múi giờ (4 thành phố khác nhau)\n\n✔ Giờ thế giới, có 31 múi giờ của 48 thành phố\n\n✔ Đồng hồ bấm giờ 1/100 giây (Khả năng đo: 23:59’59,99” cùng 4 chế độ đo)\n\n✔ Đồng hồ đếm ngược (Đơn vị đo: 1/10 giây)\n\n✔ 5 chế độ báo hàng ngày hoặc một lần\n\n✔ Tín hiệu thời gian hàng giờ\n\n✔ Lịch hoàn toàn tự động (đến năm 2099)\n\n✔ Định dạng giờ 12/24\n\n✔ Bật/tắt âm nhấn nút\n\n✔ Giờ hiện hành thông thường: Giờ, phút, giây, chiều, tháng, ngày, thứ\n\n\n\n\n\n\n\nBạn còn đang cân nhắc giữa Casio AE-1200WHD-1AVD với những chiếc đồng hồ khác trên thị trường? Thế thì xem ngay 5 ưu điểm nổi bật của sản phẩm này:\n\n\n\n☑ Là sản phẩm đồng hồ Nhật Bản đến từ thương hiệu uy tín Casio.\n\n☑ Được trang bị máy quartz siêu bền, độ chính xác cao và tuổi thọ pin dài lâu.\n\n☑ Là chiếc đồng hồ hot nhất dành cho nam của Casio.\n\n☑ Sản phẩm dùng dây kim loại nên khi sử dụng rất tiện lợi, dễ vệ sinh và không bị hôi tay như những chất liệu khác như dây da, dây vải.\n\n☑ Giá thành rẻ nhất thị trường và không một thương hiệu nổi tiếng nào có thể cạnh tranh lại với sản phẩm Casio AE-1200WHD	100	1189790	2024-04-09 15:08:53.924012+07	2024-04-09 15:08:53.924012+07
 19	8	Đồng Hồ Xiaoya 1258 Thiết Kế Tối Giản Thời Trang Cho Nữ	Thời gian giao hàng dự kiến cho sản phẩm này là từ 7-9 ngày\n  \n  Thương hiệu: Xiaoya\n  Mẫu sản phẩm: 1258\n  Dành cho: nữ\n  Không thấm nước: có\n  Cấp độ chống thấm nước: không thấm nước 10M\n  Máy đồng hồ: Quartz\n  Độ dày: 8 mm\n  Đường kính mặt đồng hồ: 32mm\n  Chiều dài dây đeo: 230mm\n  Chiều rộng dây đeo: 16mm\n  Kiểu nút điều chỉnh: đỉnh chóp nón\n  Loại mặt dưới đồng hồ: thông thường\n  Chất liệu kính: gương kính thông thường\n  Kiểu khóa gài: khóa chốt\n  Chất liệu dây đeo: PU\n  Hình dạng mặt đồng hồ: tròn\n  Chất liệu vỏ: kim loại\n  Số hiệu sản phẩm: 1258\n  Gói hàng bao gồm: Đồng hồ * 1 hướng dẫn * 1 hộp đóng gói * 1	100	99000	2024-04-09 15:13:27.288839+07	2024-04-09 15:13:27.288839+07
-8	3	Laptop Dell Vostro 3520 i3 1215U/8GB/256GB/OfficeHS/Win11 (V5I3614W1)	Laptop Dell Vostro 3520 i3 1215U/8GB/256GB/OfficeHS/Win11 (V5I3614W1)\n\n➡ CAM KẾT ĐỔI TRẢ HÀNG LỖI \n\n➡ BẢO HÀNH CHÍNH HÃNG 12 THÁNG \n\n➡ TEST KỸ SẢN PHẨM TRƯỚC KHI GIAO \n\n----------------------------------------------------------\n\n✪ Laptop Dell Vostro 3520 i3 1215U (V5I3614W1) là một lựa chọn tuyệt vời cho những bạn đang cần tìm một chiếc laptop học tập - văn phòng sở hữu cấu hình ổn định, có khả năng vận hành trơn tru mọi tác vụ thường ngày.\n\n• Bộ vi xử lý Intel Core i3 1215U với 6 nhân và 8 luồng, tốc độ xung nhịp lên đến 4.40 GHz, kết hợp cùng card tích hợp Intel UHD Graphics có thể vận hành hoàn hảo các tác vụ đơn giản như xem video, lướt web, chơi game cơ bản hay thực hiện các công việc văn phòng như xử lý văn bản và bảng tính một cách trơn tru.\n\n• Laptop được trang bị RAM 8 GB với khả năng nâng cấp lên đến tối đa 16 GB, hỗ trợ việc chạy các ứng dụng đòi hỏi nhiều tài nguyên bộ nhớ và đa nhiệm hiệu quả. Ổ cứng SSD 256 GB cung cấp không gian lưu trữ đủ cho nhiều tệp tin và ứng dụng, rút ngắn thời gian khởi động thiết bị.\n\n• Màn hình 15.6 inch với độ phân giải Full HD (1920 x 1080) có khả năng hiển thị hình ảnh chi tiết và sắc nét. Tấm nền IPS cung cấp góc nhìn rộng, công nghệ chống chói Anti Glare giúp giảm thiểu các ánh sáng phản chiếu và mờ hình ảnh. Tần số quét 120 Hz giảm thiểu hiện tượng giật hình và cải thiện trải nghiệm chơi game.\n\n\n\n✪ • Laptop Dell Vostro được cài đặt hệ điều hành mới nhất của Microsoft - Windows 11, phù hợp để làm việc văn phòng, soạn thảo văn bản, tính toán và quản lý tài liệu. Bộ Office Home & Student cung cấp các ứng dụng như Word, Excel và PowerPoint để giúp người dùng tạo và chỉnh sửa tài liệu thêm dễ dàng hơn.\n\n\n\nTHÔNG SỐ KỸ THUẬT:\n\n•Tên Hãng: Dell\n\nCPU:  core i3 - 1215U 1.2GHz\n\nRAM: 8 GBDDR4 2 khe (1 khe 8 GB + 1 khe rời)2666 MHz. Hỗ trợ RAM tối đa: 16 GB\n\nỔ cứng: 256 GB SSD NVMe PCIe. Hỗ trợ khe cắm HDD SATA 2.5 inch mở rộng (nâng cấp tối đa 2 TB)\n\n\n\nMàn hình: 15.6"Full HD (1920 x 1080) 120Hz\n\nCông nghệ màn hình:\n\nChống chói Anti Glare\n\nLED Backlit\n\n250 nits\n\nWVA\n\nCard màn hình: Card tích hợp Intel UHD\n\n\n\nCổng kết nối:\n\nHDMI\n\n1 x USB 2.0\n\nJack tai nghe 3.5 mm\n\n2 x USB 3.2\n\nLAN (RJ45)\n\n\n\nHệ điều hành: Windows 11 Home SL + Office Home & Student vĩnh viễn\n\nThiết kế: Vỏ nhựa\n\n------------------------------------------\n\n🏢 ĐỊA CHỈ: BENCOMPUTER – SỐ 7 NGÕ 92, NGUYỄN KHÁNH TOÀN, CẦU GIẤY, HÀ NỘI\n\n☎HOTLINE/ZALO MUA HÀNG: 0966.469.269\n\n-----------------------------------------\n\n#maytinhxachtay #laptopgiare #maytinhdell #laptop #corei3 #corei5 #maytinhvanphong #laptopre #laptopsinhvien #laptopi3 #laptopr5 #ryzen3 #laptopdelli5 #Dellinspiron #ryzen5 #dell #lapdell	100	13000000	2024-04-09 13:00:20.727955+07	2024-04-09 13:00:20.727955+07
+8	3	Laptop Dell Vostro 3520 i3 1215U/8GB/256GB/OfficeHS/Win11 (V5I3614W1)	Laptop Dell Vostro 3520 i3 1215U/8GB/256GB/OfficeHS/Win11 (V5I3614W1)\n\n➡ CAM KẾT ĐỔI TRẢ HÀNG LỖI \n\n➡ BẢO HÀNH CHÍNH HÃNG 12 THÁNG \n\n➡ TEST KỸ SẢN PHẨM TRƯỚC KHI GIAO \n\n----------------------------------------------------------\n\n✪ Laptop Dell Vostro 3520 i3 1215U (V5I3614W1) là một lựa chọn tuyệt vời cho những bạn đang cần tìm một chiếc laptop học tập - văn phòng sở hữu cấu hình ổn định, có khả năng vận hành trơn tru mọi tác vụ thường ngày.\n\n• Bộ vi xử lý Intel Core i3 1215U với 6 nhân và 8 luồng, tốc độ xung nhịp lên đến 4.40 GHz, kết hợp cùng card tích hợp Intel UHD Graphics có thể vận hành hoàn hảo các tác vụ đơn giản như xem video, lướt web, chơi game cơ bản hay thực hiện các công việc văn phòng như xử lý văn bản và bảng tính một cách trơn tru.\n\n• Laptop được trang bị RAM 8 GB với khả năng nâng cấp lên đến tối đa 16 GB, hỗ trợ việc chạy các ứng dụng đòi hỏi nhiều tài nguyên bộ nhớ và đa nhiệm hiệu quả. Ổ cứng SSD 256 GB cung cấp không gian lưu trữ đủ cho nhiều tệp tin và ứng dụng, rút ngắn thời gian khởi động thiết bị.\n\n• Màn hình 15.6 inch với độ phân giải Full HD (1920 x 1080) có khả năng hiển thị hình ảnh chi tiết và sắc nét. Tấm nền IPS cung cấp góc nhìn rộng, công nghệ chống chói Anti Glare giúp giảm thiểu các ánh sáng phản chiếu và mờ hình ảnh. Tần số quét 120 Hz giảm thiểu hiện tượng giật hình và cải thiện trải nghiệm chơi game.\n\n\n\n✪ • Laptop Dell Vostro được cài đặt hệ điều hành mới nhất của Microsoft - Windows 11, phù hợp để làm việc văn phòng, soạn thảo văn bản, tính toán và quản lý tài liệu. Bộ Office Home & Student cung cấp các ứng dụng như Word, Excel và PowerPoint để giúp người dùng tạo và chỉnh sửa tài liệu thêm dễ dàng hơn.\n\n\n\nTHÔNG SỐ KỸ THUẬT:\n\n•Tên Hãng: Dell\n\nCPU:  core i3 - 1215U 1.2GHz\n\nRAM: 8 GBDDR4 2 khe (1 khe 8 GB + 1 khe rời)2666 MHz. Hỗ trợ RAM tối đa: 16 GB\n\nỔ cứng: 256 GB SSD NVMe PCIe. Hỗ trợ khe cắm HDD SATA 2.5 inch mở rộng (nâng cấp tối đa 2 TB)\n\n\n\nMàn hình: 15.6"Full HD (1920 x 1080) 120Hz\n\nCông nghệ màn hình:\n\nChống chói Anti Glare\n\nLED Backlit\n\n250 nits\n\nWVA\n\nCard màn hình: Card tích hợp Intel UHD\n\n\n\nCổng kết nối:\n\nHDMI\n\n1 x USB 2.0\n\nJack tai nghe 3.5 mm\n\n2 x USB 3.2\n\nLAN (RJ45)\n\n\n\nHệ điều hành: Windows 11 Home SL + Office Home & Student vĩnh viễn\n\nThiết kế: Vỏ nhựa\n\n------------------------------------------\n\n🏢 ĐỊA CHỈ: BENCOMPUTER – SỐ 7 NGÕ 92, NGUYỄN KHÁNH TOÀN, CẦU GIẤY, HÀ NỘI\n\n☎HOTLINE/ZALO MUA HÀNG: 0966.469.269\n\n-----------------------------------------\n\n#maytinhxachtay #laptopgiare #maytinhdell #laptop #corei3 #corei5 #maytinhvanphong #laptopre #laptopsinhvien #laptopi3 #laptopr5 #ryzen3 #laptopdelli5 #Dellinspiron #ryzen5 #dell #lapdell	96	13000000	2024-04-09 13:00:20.727955+07	2024-04-09 13:00:20.727955+07
 9	3	Laptop Dell Inspiron 3530 N5I5791W1 (Core i5-1335U | 16GB | 512GB |15.6 inch FHD 120Hz | Win 11 | Office)	Thông Số Kỹ Thuật\n\nThương hiệu Dell\n\nModel DELL VOS15 3530\n\nPart number 80GG92 \n\nBảo hành 12 tháng\n\nMàu sắc Titan Gray\n\nBộ vi xử lí Intel® Core™ i3-1305U (Bộ nhớ đệm 10M, lên đến 4,50 GHz)\n\nMàn hình 15.6 inch FHD (1920 x 1080) 120Hz 250 nits WVA Anti- Glare LED Backlit Narrow Border DisplayRam16 GB, 2 x 8 GB, DDR4, 3200 MT/s\n\nỔ cứng 256 GB, M.2, PCIe NVMe, SSDVGAIntel Iris Xe Graphics\n\nCổng giao tiếp 1 USB 3.2 Gen 1 port\n\n1 USB 2.0 port\n\n1 USB 3.2 Gen 1 Type-C® port\n\n1 USB 3.2 Gen 1 Type-C® port with DisplayPort Alt Mode 1.4/Power Delivery (only for computers with aluminum chassis or NVIDIA® GeForce MX550 graphics card)\n\n1 Universal audio port\n\n1 HDMI 1.4 port\n\n1 RJ45 Ethernet port\n\n1 Power-adapter port\n\nKết nối mạng 802.11ac 1x1 WiFi and Bluetooth\n\nPin4 Cell, 54 Wh, integrated\n\nKích thướcHeight (Front): 0.67 in. (16.96 mm)\n\nHeight (Rear): 0.75 in. (19.00 mm)\n\nWidth: 14.11 in. (358.50 mm)\n\nDepth: 9.28 in. (235.60 mm)\n\nCân nặng4.19 lb (1.90 kg)\n\nHệ điều hành Win11 Home SL, Microsoft(R)Office Home and Student 2021	100	17990000	2024-04-09 13:00:20.727955+07	2024-04-09 13:00:20.727955+07
 20	8	Đồng hồ đeo tay Xiaoya 1300 chất liệu dây đeo bằng nhựa thời trang cho nữ	Thời gian giao hàng dự kiến cho sản phẩm này là từ 7-9 ngày\n \n  Thương hiệu: XIAOYA\n  Model: 1300\n  Dành cho: Nữ\n  Phong cách: Thời trang\n  Chống thấm nước: Không\n  Bộ máy đồng hồ: Thạch anh\n  Thương hiệu: XIAOYA\n  Độ dày: 9mm\n  Đường kính mặt đồng hồ: 31mm\n  Chiều rộng dây đeo: 18mm\n  Chiều dài dây đeo: 230mm\n  Đáy mặt đồng hồ: Bình thường\n  Chất liệu gương: Gương nhựa\n  Kiểu khóa cài: Khóa ghim\n  Chất liệu dây đeo: Nhựa\n  Chất liệu vỏ: Nhựa\n  Bảo hành: Không có\n  Gói hàng bao gồm: 1 x Đồng hồ đeo tay, 1 x Hướng dẫn sử dụng, 1 x Hộp đựng	100	55000	2024-04-09 15:18:59.904312+07	2024-04-09 15:18:59.904312+07
 25	11	Đồng hồ nữ chính hãng dây da Royal Crown 6305 mặt nhỏ chống nước, đính đá cao cấp rất đẹp, thời trang, hợp đeo tay nhỏ	Đồng hồ nữ chính hãng dây da Royal Crown 6305 mặt nhỏ chống nước, đính đá cao cấp rất đẹp, thời trang, phù hợp đeo tay nhỏ\n\n\n\nCHÍNH SÁCH BẢO HÀNH VÀ ĐỔI TRẢ CỦA ROYALCROWN VIETNAM \n\n\n\n- Bảo hành 24 tháng\n\n- Thay pin chính hãng miễn phí trọn đời\n\n- Hỗ trợ trọn đời kiểm tra lỗi máy trong quá trình sử dụng\n\n- Chính sách đổi trả: 1 đổi 1 miễn phí trong 30 ngày kể từ ngày nhận hàng nếu lỗi do nhà sản xuất\n\n\n\nRoyal Crown Vietnamn CAM KẾT đảm bảo chất lượng 100% \n\n- Đến tay Quý Khách trọn bộ sản phẩm bao gồm:  \n\n+ Hộp và túi chính hãng, Tag kèm imei, Thẻ bảo hành, Hướng dẫn sử dụng , tem chống hàng giả.\n\n+ Hóa đơn bán hàng có đóng dấu hãng\n\n	100	1195000	2024-04-09 15:55:53.642684+07	2024-04-09 15:55:53.642684+07
@@ -1079,6 +1307,7 @@ COPY public.products (id, productline_id, product_name, description, quantity_in
 29	13	YouWatch 9933 Đồng hồ nữ dây da chính hãng đa chức năng lịch ngày ba mắt sáu kim chronograph dạ quang chống thấm nước	Chào mừng bạn đến với 【OLEVS-Official-Store】\n\nChúng tôi cam kết: 100% đồng hồ nguyên bản! Hàng đã sẵn sàng! Chuyển phát nhanh! Bao bì tốt! \n\n\n\n\n\n✅ Giao hàng: Đơn hàng sẽ được chuyển trong vòng 12 giờ.\n\n✅ Đến: 7-9 ngày làm việc sau khi vận chuyển.\n\n✅ Sau khi bán: Nếu đồng hồ của bạn có vấn đề về chất lượng hoặc bạn không hài lòng. Chúng tôi cung cấp một khoản hoàn lại đầy đủ.\n\n✅Chào mừng người bán buôn và người bán lại\n\n✅ Hy vọng bạn thích mua sắm của bạn.\n\n\n\n【Thông Tin sản phẩm】 ↓\n\nThương hiệu: OLEVS 9933\n\nTrọng lượng đồng hồ: 35g\n\nĐường kính đồng hồ: 34mm\n\nĐộ dày quay số: 10mm\n\nChiều rộng dây đeo: 16mm\n\nChiều dài dây đeo: 220mm\n\n\n\n\n\nCác biện pháp phòng ngừa❌:\n\n- Vui lòng không va đập và để đồng hồ tiếp xúc với các chất ăn mòn, nhiệt độ cao hoặc từ trường mạnh.\n\n- Vui lòng tránh xa dung môi, chất tẩy rửa, chất tẩy rửa công nghiệp, keo, sơn.\n\n- Đeo đồng hồ có vòng đeo tay dễ trầy xước nên các bạn đeo dây đồng hồ đeo đồng hồ nhé.\n\n- Không điều chỉnh nút hẹn giờ khi đồng hồ bị ướt.\n\n- Vui lòng không đặt đồng hồ thay đổi nhiệt độ đột ngột.\n\n- Vui lòng không nhấn nút và đặt nó vào nước.\n\n\n\n【Mục Bao gồm】\n\n1 x Đồng hồ gốc\n\n1 x hộp quà tinh tế (Quà tặng miễn phí)\n\n1 x Hướng dẫn sử dụng \n\n1 x Thẻ olevs gốc\n\n\n\n【100% Hỗ trợ khách hàng】\n\n1. Chúng tôi là nhà sản xuất ban đầu.\n\n2. Tất cả các sản phẩm là 100% mới và nguyên bản.\n\n3. Chúng tôi nỗ lực hết mình để cung cấp các sản phẩm chất lượng cao nhất với giá cả hợp lý.\n\n4. Tận tâm cung cấp một trải nghiệm khách hàng tốt chắc chắn!\n\n5. Sự hài lòng của khách hàng luôn quan trọng đối với chúng tôi.	100	598000	2024-04-09 16:23:10.569733+07	2024-04-09 16:23:10.569733+07
 30	14	Đồng hồ nữ Olevs viền đá hiện đại,Đồng hồ nữ dây da thời trang công sở,Đồng hồ nữ thạch anh chống nước chính hãng	Đồng hồ nữ Olevs viền đá hiện đại,Đồng hồ nữ dây da thời trang công sở,Đồng hồ nữ thạch anh chống nước chính hãng\n\nTên sản phẩm: Đồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\nThương hiệu: OLEVS\n\n- Size :38mm\n\n-Độ dày:10mm\n\n- Dây da thoáng khí\n\n- Gương tráng độ cứng cao\n\n-Thép không gỉ, không phai màu\n\n- Chống nước 3ATM\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\n❃ CÁC TRƯỜNG HỢP CHỐNG NƯỚC CHO KHÁCH THAM KHẢO:\n\n- 30M, 3ATM, 3BAR (hoặc chỉ ghi là Water Resistance) : Chỉ chịu nước ở mức rửa tay, đi mưa.\n\n- 50M, 5ATM, 5 BAR : Được sử dụng trong bơi lội, lặn sông nước (không sử dụng được trong lặn biển, chơi thể thao mạnh dưới nước…)\n\n- 100M, 10 ATM, 10BAR : Được sử dụng trong bơi lội, lặn vùng sông nước, lặn biển, không được sử dụng khi chơi thể thao mạnh dưới nước.\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\n\n\n***MỘT SỐ LƯU Ý CHUNG BẢO QUẢN TRONG QUÁ TRÌNH SỬ DỤNG ĐỒNG HỒ:\n\n*Hạn chế để đồng hồ tiếp xúc với hóa chất, xà phòng, chất tẩy rửa,....\n\n*Không điều chỉnh đồng hồ khi đồng hồ đang ướt/đang sử dụng nước.\n\n*Mặc dù chịu lực và chống sốc tốt nhưng bạn chú ý hạn chế những tác động lực mạnh trực tiếp lên đồng hồ. Hạn chế để đồng hồ bị va đập, rơi rớt hoặc va chạm mạnh.\n\n\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng\n\nĐồng hồ nữ Olevs,Đồng hồ nữ dây da,Đồng hồ nữ thạch anh chống nước chính hãng	100	650000	2024-04-09 19:49:49.886008+07	2024-04-09 19:49:49.886008+07
 31	15	Điện Thoại Samsung Galaxy A14 5G (4GB + 128GB) - Hàng chính hãng	Thông số kỹ thuật\n\nPin: 5000 mAH\n\nBộ nhớ: 4GB/128GB - Hỗ trợ thẻ nhớ ngoài: MicroSD (Hỗ trợ tối đa 1TB)\n\nCamera Sau: 50.0 MP + 2.0 MP + 2.0MP\n\nCamera trước: 13.0 MP\n\nHiển thị: Kích thước 6.6"\n\nBộ vi xử lý: Mediatek 700 - Octa-core 2.2 GHz	100	3490000	2024-04-09 19:49:49.886008+07	2024-04-09 19:49:49.886008+07
+3	1	[Nhập ELHP15 giảm 15%] LapTop HP Pavilion 15 eg2059TU-6K789PA|i5 1240P|8GB | 256GB SSD | 15.6" FHD IPS | Win 11	THÔNG SỐ KỸ THUẬT\n\nCPU\t\t\t12th Generation Intel® Alder Lake Core™ i5 _ 1240P Processor (1.70 GHz, 12MB Cache Up to 4.40 GHz, 12 Cores 16 Threads)\n\nMemory\t\t\t8GB DDr4 Bus 3200Mhz (2 Slot, 4GB x 02, Dual Chanel)\n\nHard Disk\t\t\t256GB PCIe® NVMe™ M.2 SSD\n\nVGA\t\t\tIntegrated Intel® Iris® Xe Graphics\n\nDisplay\t\t\t15.6 inch Diagonal Full HD (1920 x 1080) IPS Micro Edge BrightView 250 Nits 45% NTSC\n\nOther\t\t\tHP Wide Vision 720p HD Camera, Audio B&O Dual Speakers, HP Audio Boost, Multi Format SD Media Card Reader, Headphone / Microphone Combo, HDMI 2.0, SuperSpeed USB Type A 5Gbps Signaling Rate, SuperSpeed USB Type C® 10Gbps Signaling Rate (USB Power Delivery, DisplayPort™ 1.4, HP Sleep and Charge)\n\nWireless\t\t\tWi-Fi 6 MT7921 (2x2) and Bluetooth® 5.2 combo\n\nBattery\t\t\t3 Cells 41 Whrs Battery\n\nWeight\t\t\t1,70 Kg\n\nSoftWare\t\t\tWindows 11 Home SL 64bit\n\nXuất xứ\t\t\tBrand New 100%, Hàng Phân Phối Chính Hãng Tại Việt Nam, Bảo Hành Chính Hãng\n\nMàu sắc\t\t\tAluminum Silver\n\nBảo hành\t\t\t12 tháng\n\nBộ sản phẩm\t\t\tThùng máy, Máy tính, Bộ sạc, Hướng dẫn sử dụng\n\n-----------------------------------------------------------------------------------------------------------------------------------------------\n\nMÔ TẢ TÍNH NĂNG\n\nLaptop HP Pavilion 15-eg2059TU được thiết kế vừa chắc chắn bền bỉ, vừa tạo cảm giác dễ chịu, mát tay cho người dùng nhờ lớp chiếu nghỉ tay bằng kim loại. Máy có trọng lượng nhẹ thuận lợi cho bạn trong quá trình di chuyển, với kích thước này bạn có thể đặt nó nằm gọn trong chiếc balo mang theo bên mình.\n\n\n\nMàn hình 15.6 inch với độ phân giải Full HD IPS (1920 x 1080) đem đến chất lượng hình ảnh hiển thị sắc nét, giúp màn hình có độ sáng cao, màu sắc khá tốt.\n\n\n\nĐi kèm với CPU Intel Core i5-1240P là card đồ họa tích hợp Intel Iris Xe Graphics hỗ trợ đáng kể khả năng xử lý đa tác vụ của máy, cho phép người dùng sử dụng các ứng dụng Photoshop, AI,... một cách mượt mà. Ổ cứng SSD 256GB PCIe NVMe đem đến cho người dùng một không gian lưu trữ rộng rãi, đồng thời đẩy nhanh tốc độ truy xuất dữ liệu, giúp mở máy và khởi động ứng dụng một cách nhanh chóng.\n\n\n\nDọc hai bên thành máy là các cổng kết nối thông dụng giúp bạn kết nối dễ dàng với các thiết bị ngoại vi. Ngoài ra kết nối Wi-Fi và Bluetooth hiện đại cũng được trang bị, đảm bảo các kết nối trực tuyến của bạn luôn được ổn định, mượt mà.\n\n\n\nBàn phím laptop được thiết kế hợp lý, hành trình phím sâu, nút bấm êm, độ nảy tốt và được tích hợp bàn phím số giúp việc nhập liệu trở nên dễ dàng, chính xác.	95	14790000	2024-04-09 12:45:15.368888+07	2024-04-09 12:45:15.368888+07
 5	2	Laptop ASUS TUF Gaming A15 FA507NV-LP046W R7-7735HS|8GB|512GB|RTX™ 4060 8G	THÔNG TIN SẢN PHẨM\n\nThông số kỹ thuật\n\n•\tCPU\tAMD Ryzen 7 7735HS 3.2GHz up to 4.75GHz 16MB\n\n•\tRAM\t8GB DDR5 4800MHz (2x SO-DIMM socket, up to 32GB SDRAM)\n\n•\tỔ cứng\t512GB PCIe® 4.0 NVMe™ M.2 SSD (2230) (Còn trống 1 khe SSD M.2 PCIE)\n\n•\tCard đồ họa\tNVIDIA® GeForce RTX™ 4060 8GB GDDR6, Up to 2420MHz* at 140W (2370MHz Boost Clock+50MHz OC, 115W+25W Dynamic Boost)\n\n•\tMàn hình\t15.6" FHD (1920 x 1080) IPS, 144Hz, Wide View, 250nits, Narrow Bezel, Non-Glare with 72% NTSC, 100% sRGB, 75.35% Adobe RGB, G-Sync\n\n•\tCổng giao tiếp\t1x Type C USB 4 support DisplayPort™ / G-SYNC\n\n•\t1x USB 3.2 Gen 2 Type-C support DisplayPort™ / power delivery / G-SYNC\n\n•\t2x USB 3.2 Gen 1 Type-A\n\n•\t1x RJ45 LAN port\n\n•\t1x HDMI 2.1 FRL\n\n•\t1x 3.5mm Combo Audio Jack\n\n•\tAudio\t2-speaker system, Dolby Atmos\n\n•\tBàn phím\tBacklit Chiclet Keyboard RGB\n\n•\tChuẩn LAN\t10/100/1000 Mbps\n\n•\tChuẩn WIFI\tWi-Fi 6(802.11ax) (Dual band) (2X2)\n\n•\tBluetooth\tv5.2\n\n•\tWebcam\tHD 720p\n\n•\tHệ điều hành\tWindows 11 Home\n\n•\tPin\t4 Cell 90WHrs\n\n•\tTrọng lượng\t2.2 kg\n\n•\tMàu sắc\tJaeger Gray\n\n•\tKích thước\t35.4 x 25.1 x 2.24 ~ 2.49 cm\n\n\n\n• Bảo hành 24 tháng chính hãng\n\n• Xuất xứ: Trung Quốc\n\n• Bảo hành chính hãng 24 tháng tại TTBH của Asus\n\n• Sản phẩm full box (Sản phẩm + sạc + hướng dẫn sử dụng )\n\n\n\n• Đối với sản phẩm dưới 20 triệu quý khách hàng cung cấp thông tin VAT công ty hoặc cá nhân để xuất hóa đơn bảo hành sản phẩm. Trường hợp không cung cấp shop mặc định xuất theo thông tin tài khoản mua hàng.\n\n\n\n• Đối với sản phẩm trên 20 triệu ( Bao gồm các khoản trợ giá nếu có) . Shop xin miễn trừ trách nhiệm không xuất VAT công ty. Chỉ mặc định xuất hóa đơn cá nhân để bảo hành sản phẩm.\n\n\n\n•  ***Trong quá trình sử dụng nếu cần hỗ trợ về kỹ thuật hãy đến các chi nhánh sau.\n\n•   396 - 398 Nguyễn Kiệm, P. 3, Q. Phú Nhuận, HCM\n\n•   ☞ Thứ 2 – Thứ 6 (9:00 – 20:00)\n\n•   ☞ Thứ 7 – Chủ Nhật (9:00 – 18:00)\n\n\n\n\n\n•   184/41 Nguyễn Xí, Phường 26, Q. Bình Thạnh, HCM\n\n•   ☞ Thứ 2 – Thứ 6 (8:30 – 17:30)\n\n•   ☞ Thứ 7 (8:30 – 12:30)\n\n\n\n•    Điểm giao dịch - Bảo hành tại Hà Nội\n\n•    Tầng 5, 71 Nguyễn Chí Thanh, Láng Hạ, Đống Đa, Hà Nội\n\n•   ☞ Thứ 2 – Thứ 6 (8:30 – 17:30)\n\n•   ☞ Thứ 7 (8:30 – 12:30)\n\n\n\n•    ❖ Thời gian bảo hành\n\n•   ☞ Thứ 2 – Thứ 6 (8:30 – 17:30)\n\n•   ☞ Thứ 7 (8:30 – 12:00)	100	27790000	2024-04-09 12:53:21.242204+07	2024-04-09 12:53:21.242204+07
 7	3	Laptop Dell Inspiron 14 7430 i7-1355U, 512GB, 16GB, 14''FHD+, Win 11	Product Description\nThông số kỹ thuật:\n\n- Bộ vi xử lý: Intel Core i7-1355U (12M Cache, up to 5.0GHz, 2 P-cores and 8 E-cores)\n\n- Ổ cứng lưu trữ: 512GB M.2 PCIe NVMe SSD\n\n- Bộ nhớ:\t16GB LPDDR5 4800MHz (RAM onboard không hỗ trợ nâng cấp)\n\n- Đồ hoạ:\tIntel Iris Xe Graphics\n\n- Màn hình: 14.0-inch 16:10 FHD+ (1920 x 1200) Touch 250nits WVA Display with ComfortView Support\n\n- Nhận dạng vân tay: Có\n\n- Cảm ứng: Có\n\n- Bàn phím: Titan Gray English International Backlit Keyboard\n\n- Pin: 4-cell battery, 54 WHr (Pin liền)\n\n- Trọng lượng:\t1.62 Kg\n\n- Hệ điều hành: Win11 Home SL\n\n\n\nThiết kế gọn nhẹ\n\nThiết kế gọn nhẹ và mỏng, Laptop Dell Inspiron 14 7430 (T7430-i7U165W11SLU) tạo nên sự cơ động và phong cách, sẵn sàng theo bạn đi khắp nơi để luôn bắt kịp với nhịp sống hối hả của bạn. Laptop Dell Inspiron 14 7430 (T7430-i7U165W11SLU) thiết kế bản lề 360° để bạn có thể được sử dụng theo nhiều cách khác nhau.\n\n\n\nMàn hình tỷ lệ vàng\n\nLaptop Dell Inspiron 14 7430 (T7430-i7U165W11SLU) trang bị màn hình kích thước 14 inch với độ phân giải FHD+ với tỷ lệ vàng 16:10. Chưa dừng lại ở đó, màn hình cảm ứng hỗ trợ bút cảm ứng giúp cân bằng trải nghiệm hình ảnh với đầu vào trực quan hơn để giải trí và nghệ thuật.\n\n\n\nHiệu suất mạnh mẽ\n\nLaptop Dell Inspiron 14 7430 (T7430-i7U165W11SLU) được trang bị vi xử lý Intel Core Alder Lake thế hệ 13 mang đến hiệu năng xử lý vượt trội để máy trở nên cơ động giúp bạn dễ dàng làm việc một cách hiệu quả nhất.\n\n\n\nÂm thanh và kết nối\n\nLaptop Dell Inspiron 14 7430 (T7430-i7U165W11SLU) mang đến những trải nghiệm âm thanh cá nhân hóa tuyệt đỉnh, khả năng phát âm thanh to và sống động trong từng nhịp đập.\n\n\n\nLaptop Dell Inspiron 14 7430 (T7430-i7U165W11SLU) trang bị các kết nối hiện đại như cổng USB 3.2 Type-A, HDMI, ThunderBolt 4 và khe đọc thẻ nhớ MicroSD giúp sao lưu dữ liệu tốc độ rất cao được thực hiện dễ dàng.\n\n- Bảo hành 12 tháng\n\n- Địa chỉ bảo hành: 69/5A Đường 17, Hiệp Bình Chánh, Thủ Đức, TP. Hồ Chí Minh\n\n- Sđt bảo hành: (028) 73 0808 78 (#1009)\n\n\n\n#dell #dellofficial #dellstore #inspiron #dellinspiron #inspiron14 #intel #maytinh #pc #laptop #maytinhxachtay #maytinh&laptop #docongnghe #dientu #delli7U165W11SLU #laptopi7U165W11SLU #i7U165W11SLU #win11 #vanphong 	100	29690000	2024-04-09 13:00:20.727955+07	2024-04-09 13:00:20.727955+07
 10	4	Laptop Acer Nitro 16 Phoenix AN16-41-R5M4 (NH.QKBSV.003) (AMD Ryzen 5-7535HS) (Đen) - Bảo hành 12 tháng	Bạn là một game thủ chuyên nghiệp, luôn muốn có những trải nghiệm chơi game tốt nhất? Bạn cũng là một người có nhiều công việc và học tập, cần một chiếc laptop đa năng và hiệu quả? Bạn còn là một người yêu thích sự đẹp đẽ và thời trang, muốn có một chiếc laptop có thiết kế ấn tượng và tiện lợi? Nếu bạn có tất cả những yêu cầu trên, thì bạn không thể bỏ qua Laptop Gaming ACER NITRO 16 PHOENIX - chiếc laptop gaming quốc dân của ACER, được Phong Vũ giới thiệu với laptop acer giá rẻ hợp lý. Laptop Gaming ACER NITRO 16 PHOENIX sẽ làm hài lòng bạn với những tính năng dưới đây, cùng Phong Vũ tìm hiểu ở bài viết dưới đây nhé!\n\nĐập hộp Acer Nitro 16 Phoenix AN16-41-R5M4 (NH.QKBSV.003)\n\nVideo Đập Hộp Acer Nitro 16 Phoenix - AMD Ryzen 7, RTX 4050\n\nLaptop Gaming Quốc Dân - Cấu Hình Mạnh Mẽ và Thiết Kế Đẹp Mắt\nLaptop Gaming Quốc Dân là một thuật ngữ được sử dụng để chỉ những chiếc laptop chơi game có cấu hình mạnh mẽ và thiết kế đẹp mắt, phù hợp với nhu cầu của người chơi game. Acer Nitro 16 Phoenix là một chiếc laptop Acer gaming ấn tượng với thiết kế cấu trúc gaming từ bên ngoài cho đến vỏ hộp. Thiết kế này tạo nên một phong cách mạnh mẽ, độc đáo và tinh tế. Máy tính còn được điểm xuyết bởi các viền neon tinh tế, tạo sự hòa hợp và thu hút mọi ánh nhìn đến từ góc “setup” của game thủ. \n\n Laptop Gaming ACER NITRO 16 PHOENIX có gì đặc biệt?\n Laptop Gaming ACER NITRO 16 PHOENIX có gì đặc biệt?\nCARD ĐỒ HỌA RỜI CỰC KHỦNG MỚI NHẤT TỪ NVIDIA - Trang bị GPU RTX™ 4050\nVới GPU GeForce RTX™ Series 40 mới nhất, Gaming Nitro 16 Phoenix đem đến sức mạnh đồ họa vô cùng ấn tượng cho cả game thủ và những người sáng tạo. Card đồ họa thế hệ mới này được phát triển dựa trên kiến trúc NVIDIA Ada Lovelace, tối ưu hiệu suất và tiết kiệm năng lượng, mang đến sức mạnh đồ họa vượt trội so với thế hệ trước.\n\nACER NITRO 16 PHOENIX | Card đồ họa rời RTX 4050\nACER NITRO 16 PHOENIX | Card đồ họa rời RTX 4050\nMÀN HÌNH 165HZ CHUẨN GAMING\nMàn hình rộng 16 inch với tỉ lệ 16:10 trên Gaming Nitro 16 Phoenix được thiết kế đặc biệt cho gaming, với tấm nền IPS và độ phân giải WUXGA (1920×1200). Tần số quét cao lên đến 165Hz cùng tính năng NVIDIA Advanced Optimus đảm bảo trải nghiệm chơi game mượt mà và không gặp gián đoạn hay hiện tượng bóng mờ. Điều đáng chú ý là màn hình của Nitro 16 Phoenix còn có độ phủ màu 100% sRGB, một chỉ số hiếm thấy trong dòng Laptop Gaming tầm trung từ 20 đến 40 triệu đồng.\n\nACER NITRO 16 PHOENIX | Màn hình 165HZ chuẩn Gaming\nACER NITRO 16 PHOENIX | Màn hình 165HZ chuẩn Gaming\nCHIẾN GAME KHÔNG GIỚI HẠN VỚI CPU AMD RYZEN™ 7000 SERIES\nNitro 16 Phoenix 2023 sở hữu cấu hình chiến game cực mạnh, cân mọi tựa game từ AAA đến game Esport. Điều này được thực hiện nhờ sự trang bị của CPU AMD Ryzen™ 7000 Series mới nhất, đặc biệt là Ryzen™ 5 7535HS, Laptop Acer ryzen 5 là sự lựa chọn hàng đầu cho những game thủ yêu thích "Đội Đỏ". Với kiến trúc Zen 3+ và công nghệ 6nm, CPU này mang lại hiệu suất ấn tượng với 6 nhân xử lý và 12 luồng, cùng với bộ nhớ đệm lên đến 16MB. Điều này đảm 	100	27990000	2024-04-09 14:00:45.866991+07	2024-04-09 14:00:45.866991+07
@@ -1092,13 +1321,13 @@ COPY public.products (id, productline_id, product_name, description, quantity_in
 22	9	Đồng Hồ Dây Da Nữ NADU Classic Tif Watches Đeo Tay Thon Gọn Tiểu Thư Dễ Thương	A) TẠI SAO BẠN NÊN CHỌN CHÚNG MÌNH?\n\nTif Watches là một thương hiệu đồng hồ - khao khát mang đến cho những bạn trẻ năng động sự chỉn chu, tinh tế trong từng phụ kiện nhỏ; bạn có thể thoải mái phối những chiếc đồng hồ với nhiều bộ trang phục ở nhiều hoàn cảnh.\n\nChúng mình đặc biệt quan tâm đến trải nghiệm khách hàng: mong rằng bạn sẽ luôn tìm được sản phẩm chất lượng với mức giá hợp lý nhất và hài lòng với sự chăm sóc chu đáo trên từng đơn hàng.\n\n\n\n\n\nB) 1 BỘ SẢN PHẨM BAO GỒM:\n\nĐồng hồ chính hãng Tif Watches\n\nHộp đựng sang trọng\n\nTài liệu hướng dẫn sử dụng từ A-Z\n\n\n\nĐặc biệt: Miễn phí thắt nơ gói quà & tặng kèm thiệp viết tay (inbox shop nếu bạn có nhu cầu tặng quà)\n\n\n\n\n\nC) ĐIỀU KIỆN ĐỔI TRẢ\n\n- Sản phẩm bạn nhận không giống như mô tả\n\n- Vận chuyển đơn hàng không còn nguyên vẹn như lúc đầu (nứt, vỡ,....)\n\n- Bảo hành 6 tháng đối với lỗi do máy và pin của nsx (mẫu sẽ không bảo hành lỗi đến từ vấn đề phát sinh trong quá trình sử dụng của người dùng như: ngâm nước, rơi,..)\n\n\n\nLưu ý: KHI BẠN YÊU GẶP BẤT CỨ VẤN ĐỀ GÌ CHƯA HÀI LÒNG VỀ SẢN PHẨM HAY VẬN CHUYỂN - ĐỪNG VỘI ĐÁNH GIÁ HAY BẤM TRẢ HÀNG NGAY - MÀ HÃY NHẮN TIN CHO SHOP ĐỂ CHÚNG MÌNH HỖ TRỢ BẠN LIỀN NHA!	100	217500	2024-04-09 15:24:30.377058+07	2024-04-09 15:24:30.377058+07
 23	10	Đồng hồ nữ Julius Hàn Quóc JA-1017D dây da cá tính màu hồng	JULIUS thương hiệu đăng ký đầu tiên tại Seoul Hàn Quốc, công nghệ Nhật Bản với máy Nhật nhập khẩu 100%. Thiết kế bởi chuyên gia thời trang hàng đầu Hàn Quốc, tiêu chuẩn quốc tế, lắp ráp tại Trung Quốc, bảo hành toàn quốc và quốc tế, chế độ hậu mãi tốt nhất.\n\nTHÔNG SỐ SẢN PHẨM\n\nThương hiệu: JULIUS\n\nMã sản phẩm: JA-1017D (Hồng)\n\nDành cho: Nữ, sinh viên, nhân viên văn phòng, doanh nhân…\n\nChất liệu dây: Dây da Genuine Leather bền bỉ\n\nChất liệu mặt kính: Mặt kính khoáng cao cấp trong suốt rõ nét, độ cứng cao (chống va đập tốt ở mức sinh hoạt hàng ngày)\n\nKích thước bề mặt: 3,8cm (Mặt tròn)\n\nĐộ dày: 0,8cm\n\nTổng độ dài đồng hồ: 23cm\n\nĐộ rộng của dây: 1,9cm\n\nKiểu khóa: Khóa gài\n\nChất liệu vỏ máy: Hợp kim mạ ion vàng hồng,sử dụng công nghệ mạ IP chân không tiên tiến giúp đem lại độ sáng bóng và bền màu\n\nMáy: Quartz Nhật MIYOTA 2035 (được sản xuất bởi Citizen Nhật Bản)\n\nKhả năng chịu nước:  Chống thấm nước 3ATM (30m) có thể đi mưa, rửa tay, rửa mặt. Tránh tiếp xúc với môi trường hóa chất như giặt đồ, tấm gội.\n\nBảo hành: 12 tháng, hậu mãi 3 năm chi phí thấp sau bảo hành. Đổi mới nếu bị vô nước hoặc lỗi do nhà sản xuất. Thay dây miễn phí 1 lần, thay pin trọn đời, mua phụ kiện giá ưu đãi khi có thẻ bảo hành\n\n#dongho #donghonu #donghonam #donghogiare #giare #donghothoitrang #donghojulius #julius #juliusnu #trangsuc #vongtay #re #quatang #xuhuong #quatangtet #redep #ja1017 #1017 #ja-1017	100	539000	2024-04-09 15:26:09.571901+07	2024-04-09 15:26:09.571901+07
 24	10	Đồng hồ nữ Julius Hàn Quốc Ja-779 dây da (5 màu)	JULIUS thương hiệu đăng ký đầu tiên tại Seoul Hàn Quốc, công nghệ Nhật Bản với máy Nhật nhập khẩu 100% từ Citizen như MIYOTA. Thiết kế bởi chuyên gia thời trang hàng đầu Hàn Quốc, tiêu chuẩn quốc tế, bảo hành toàn quốc và quốc tế.\n\nTHÔNG SỐ SẢN PHẨM\n\nThương hiệu: JULIUS.\n\nMã sản phẩm: JA-779\n\nDành cho: Nữ giới, yêu thích thời trang và phá cách\n\nChất liệu dây: Dây da\n\nChất liệu mặt kính: Mặt kính khoáng cao cấp trong suốt rõ nét, độ cứng cao (chống va đập tốt ở mức sinh hoạt hàng ngày)\n\nKích thước bề mặt: 2,5cm (Mặt tròn)\n\nĐộ dày: 0,9cm\n\nTổng độ dài đồng hồ: 22,5cm\n\nĐộ rộng của dây: 0,8cm\n\nKiểu khóa: Khóa gài\n\nChất liệu vỏ máy: Hợp kim mạ ion, sử dụng công nghệ mạ IP chân không tiên tiến giúp đem lại độ sáng bóng và bền màu\n\nMáy: Quartz Nhật MIYOTA 2035 (thuộc tập đoàn Citizen Nhật Bản)\n\nKhả năng chịu nước: Chống thấm nước 3ATM (30m) có thể đi mưa, rửa tay, rửa mặt. Tránh tiếp xúc với môi trường hóa chất như giặt đồ, tấm gội.\n\nBảo hành: 12 tháng, hậu mãi 3 năm chi phí thấp sau bảo hành. Đổi mới nếu bị vô nước hay hư máy do nhà sản xuất. Thay dây miễn phí 1 lần, thay pin trọn đời, mua phụ kiện giá ưu đãi khi có thẻ bảo hành\n\nBảo Quản: Lau chùi vệ sinh sản phẩm thường xuyên bằng khăn giấy mền khỏi tuyến mồ hôi và hạn chế tiếp xúc hóa chất bảo vệ màu sắc sản phẩm và pin sản phẩm lâu dài.	100	538000	2024-04-09 15:27:53.60495+07	2024-04-09 15:27:53.60495+07
-32	15	Điện thoại Samsung Galaxy M14 5G (4GB/128GB)	Thông tin chi tiết và đặc điểm kỹ thuật của sản phẩm chưa được cập nhật cho đến khi có thông báo từ phía nhãn hàng	100	3790000	2024-04-09 19:57:08.664269+07	2024-04-09 19:57:08.664269+07
 33	15	Điện thoại Samsung Galaxy A25 5G 6GB/128GB	Thông tin kỹ thuật và đặc điểm chi tiết chưa được cập nhật cho đến khi có thông báo từ phía nhãn hàng	100	6090000	2024-04-09 20:00:08.334454+07	2024-04-09 20:00:08.334454+07
 34	15	Điện thoại Samsung Galaxy S23 FE 5G 8GB/128GB - Điện thoại AI - Galaxy AI - Camera Nightography	Thông tin kỹ thuật và đặc điểm chi tiết chưa được cập nhật cho đến khi có thông báo từ phía nhãn hàng	100	12690000	2024-04-09 20:06:55.341954+07	2024-04-09 20:06:55.341954+07
 35	16	Điện thoại OPPO A17k - Hàng chính hãng	Điện thoại OPPO A17K 64GB - Hiệu năng mượt mà, giải trí không giới hạn\n\nMang dáng vẻ hiện đại và sang trọng\n\nChiếc điện thoại này được OPPO hoàn thiện khá tỉ mỉ với vẻ ngoài cực sang trọng và hiện đại. Phần khung viền của máy được thiết kế vuông vức cùng các đường bo cạnh tinh tế. Mặt lưng của điện thoại OPPO mang tính thẩm mỹ cao khi kết hợp những đường sọc dọc thời thượng. Máy cực kỳ mỏng nhẹ chỉ 189 gam với kích thước chiều dài 164.2 mm, chiều ngang 75.6 mm và bề dày 8.3 mm. Vì khá nhỏ gọn nên bạn có thể mang đi bất cứ đâu, việc cầm nắm cũng nhẹ tay hơn. \n\n\n\n\n\nOPPO A17K mang dáng vẻ hiện đại sang trọng\n\n\n\nTrải nghiệm lớn với màn hình rộng hơn\n\nSự cải tiến đến từ dòng điện thoại của OPPO chưa bao giờ dừng lại khi mở rộng màn hình lớn lên đến 6.56 inch. Ngoài ra, màn hình còn được phủ tấm nền IPS LCD nên có thể cho ra mọi hình ảnh cực chất lượng trên không gian hiển thị rộng lớn. Người dùng tận hưởng hưởng việc xem phim và chơi game ấn tượng hơn với độ phân giải chi tiết của màn hình HD+ (720 x 1612 Pixels). Với chiếc smartphone nhỏ gọn này bạn có thể thoải mái đắm chìm trong không gian giải trí hàng ngày bằng những hình ảnh sống động cùng những dải sắc màu chân thực hơn bao giờ hết. \n\n\n\n\n\nMàn hình điện thoại OPPO A17K cho trải nghiệm rộng lớn\n\n\n\nCảm biến vân tay tinh tế\n\nĐiện thoại OPPO A17K 64GB được trang bị cảm biến vân tay mở khóa ngay tại nút nguồn phía bên hông của máy. Vì vậy sẽ rất tiện lợi cho bạn khi mở khóa cũng như tăng thêm tính thẩm mỹ cho máy. Chỉ bằng một cái chạm nhẹ đơn giản là bạn có thể mở ra mọi thế giới của mình trong chiếc điện thoại nhỏ bé này rồi. \n\n\n\n\n\nCảm biến vân tay trên điện thoại OPPO A17K \n\n\n\nBộ camera chất lượng cho mọi bức ảnh hoàn hảo\n\nĐiện thoại OPPO A17K 64GB có cụm camera được làm phẳng vào mặt lưng máy tạo sự liền mạch và tinh tế. Camera sau của máy có độ phân giải 8MP và một camera trước 5MP. Tuy chiếc điện thoại này có độ phân giải camera ở mức vừa tầm nhưng nó được OPPO nâng cao thêm khi trang bị những tính năng công nghệ cực hiện đại. \n\n\n\n\n\nCamera của A17K cho mọi bức ảnh hoàn hảo\n\n\n\nKhả năng chụp hình xóa phông hoàn hảo khi chụp ở chế độ chân dung giúp mọi chủ thể được nổi bật hơn trong những bức hình. Bên cạnh đó là công nghệ làm đẹp tự nhiên AI sẽ giúp mọi bức ảnh của bạn trở nên thật tự nhiên và trong trẻo với những màu sắc chân thực. \n\n\n\nHiệu năng mượt mà trong tầm giá\n\nOPPO A17K mang trong mình con chip MediaTek Helio G35 8 nhân, đây là con chip xử lý với mức giá tầm trung nhưng vẫn đảm bảo các thao tác của bạn được xử lý khá mượt mà và ổn định. Chiếc điện thoại này có RAM 3GB nhưng thực tế có thể mở rộng lên 4GB từ việc chuyển đổi một phần ROM thành RAM. Nhờ vậy, có thể tăng thêm phần mạnh mẽ giúp người dùng có những trải nghiệm tốt hơn.	100	2690000	2024-04-09 20:10:10.008262+07	2024-04-09 20:10:10.008262+07
 36	16	Điện thoại OPPO A78 - Hàng chính hãng	ĐIỆN THOẠI OPPO A78 (8GB/256GB) - HÀNG CHÍNH HÃNG.\n\nBẢO HÀNH 12 THÁNG TẠI CÁC TTBH OPPO TOÀN QUỐC.\n\n30 NGÀY ĐỔI MỚI 1 - 1 nếu có lỗi từ nhà sản xuất tại các TTBH OPPO Toàn quốc.\n\nHOT LINE HỖ TRỢ MIỄN PHÍ: 1800.5888.41 (. Miễn phí cước gọi )	100	6190000	2024-04-09 20:17:25.287751+07	2024-04-09 20:17:25.287751+07
 37	16	Điện Thoại OPPO RENO7 PRO (12GB/256GB) - Hàng Chính Hãng	OPPO RENO7 PRO 5G - trải nghiệm nhiếp ảnh chuyên nghiệp\n\n\n\nReno7 Pro 5G sở hữu hệ thống camera chân dung chuyên nghiệp, bao gồm camera chính 50MP được hỗ trợ bởi cảm biến IMX766 với kích thước lên tới 1/1,56 inch, cùng với camera macro 2MP và cảm biến nhiệt độ màu chuyên dụng, tích hợp các công nghệ tiên tiến bao gồm Lấy nét đa hướng tất cả điểm ảnh PDAF và DOL-HDR, đảm bảo trải nghiệm chụp ảnh chân dung chuyên nghiệp.\n\nCamera selfie 32MP được trang bị cảm biến RGBW cao cấp mới nhất IMX709, cảm biến được thiết kế bởi OPPO và sản xuất bởi Sony. Cảm biến này có thiết kế mảng điểm ảnh hoàn toàn mới, bổ sung các pixel màu trắng không có trong cảm biến RGGB truyền thống. Nhờ vậy, cảm biến hình ảnh trên Reno7 Pro 5G có thể thu được nhiều ánh sáng hơn 60% so với cảm biến RGGB tiêu chuẩn, giảm nhiễu lên tới 35%, hình ảnh chụp rõ nét với độ sáng tốt hơn đáng kể trong điều kiện ánh sáng yếu, cùng với các cải tiến về kết cấu da, chi tiết và độ tương phản. Kết hợp với thuật toán DOL-HDR cùng tính năng Góc rộng thông minh trên camera trước của Reno7 Pro 5G, người dùng dễ dàng quay video selfie chất lượng cao trong nhiều tình huống khác nhau.\n\nBổ trợ cho phần cứng vượt trội nhất trong Reno7 Series, Reno7 Pro 5G còn được trang bị đầy đủ các tính năng chụp ảnh và quay video chuyên nghiệp, như Video Chân dung Bokeh Flare cho những thước phim chân dung cảm xúc với hiệu ứng xoá phông bokeh tự nhiên như trên các máy ảnh DSLR chuyên nghiệp; Video Nổi bật AI sử dụng thuật toán để tối ưu hoá chất lượng hình ảnh trong từng điều kiện sáng khác nhau; Chế độ Chân dung 2.0 cho phép người dùng tuỳ chỉnh chuyên sâu như điều chỉnh khẩu độ, kích cỡ bokeh để tạo ra những bức ảnh chân dung độc nhất. Một loạt các tính năng khác như Chân dung màu AI, Video hiển thị kép, Ảnh siêu nét 108MP, Chụp nhanh siêu nét,... đều mang đến cho người dùng những công cụ sáng tạo để thể hiện bản thân và ghi lại những khoảnh khắc đặc biệt theo phong cách riêng của mình.\n\nThiết kế cao cấp\n\nReno7 Pro 5G kế thừa quy trình sản xuất độc quyền OPPO Glow đặc trưng của dòng Reno với ngôn ngữ thiết kế thời thượng, tinh tế cùng hai phiên bản màu: Xanh Sao Băng và Đen Vô Cực. Đặc biệt, trên phiên bản màu Xanh Sao Băng, OPPO còn sử dụng công nghệ tạo hình bằng laser LDI (Laser Direct Imaging) để khắc 1,2 triệu vệt siêu nhỏ lên mặt lưng kính AG phủ chất cản quang, mô phỏng những vệt sao băng lấp lánh độc đáo. Đây là lần đầu tiên công nghệ LDI được ứng dụng trong thiết kế mặt lưng cho smartphone.\n\nThiết bị được hoàn thiện bằng kính 2,5D ở cả mặt trước và mặt sau, tạo cảm giác cầm nắm chắc tay, thao tác trơn tru liền mạch hơn. Reno7 Pro 5G có kích thước mỏng nhẹ, với độ dày chỉ 7,45mm và tổng trọng lượng chỉ khoảng 180g.\n\nViền đèn quỹ đạo, với một viền đèn 3D mảnh bao quanh khu vực camera sau, tạo nên điểm nhấn đặc biệt cho Reno7 Pro 5G. Điện thoại trang bị màn hình AMOLED 6,5 inch với tốc độ làm mới 90Hz mang lại trải nghiệm thị giác mượt mà và thoải mái. Màn hình được chứng nhận HDR10+ cho trải nghiệm hình ảnh sống động chất lượng cao, đồng thời được chứng nhận Amazon Prime Video HD/HDR cho phép xem các nội dung giải trí với độ phân giải cao.\n\nThiết kế của Reno7 Pro 5G mới đây vinh dự đạt Giải thưởng Thiết kế iF 2022 ở hạng mục Sản phẩm, phân loại Thiết bị viễn thông. Đây là một giải thưởng về thiết kế uy tín trên thế giới, do tổ chức thiết kế quốc tế iF International Forum Design GmbH tổ chức, với sự tham gia của 132 chuyên gia thiết kế toàn thế giới vào hội đồng đánh giá.\n\nHiệu năng vượt trội cùng trải nghiệm kết nối mạnh mẽ\n\nReno7 Pro 5G tích hợp vi xử lý 5G dành riêng cho dòng điện thoại cao cấp - MediaTek Dimensity 1200-MAX, được tuỳ biến riêng dành cho Reno7 Pro 5G dựa trên sự hợp tác giữa OPPO và MediaTek, mang tới trải nghiệm hiệu năng vượt trội, thao tác đa nhiệm mượt mà cùng kết nối 5G mạnh mẽ. Vi xử lý này được xây dựng trên tiến trình 6nm với tám lõi bao gồm lõi ARM Cortex-A78 hoạt động ở tốc độ lên đến 3GHz.\n\nReno7 Pro 5G cung cấp cho người dùng dung lượng bộ nhớ lên tới 12GB RAM và 256GB ROM cùng công nghệ Mở rộng RAM lên đến 7GB, hỗ trợ tối đa cho việc lưu trữ thông tin và đảm bảo độ mượt mà khi thao tác đa nhiệm trên máy.\n\nBên cạnh đó, người dùng không cần lo lắng về thời lượng sử dụng trên Reno7 Pro 5G khi thiết bị sở hữu công nghệ sạc nhanh SUPERVOOC lên đến 65W. Thiết bị chỉ mất khoảng 31 phút để sạc đầy 100% viên; chỉ với 5 phút sạc là người dùng có thể xem phim liên tục trong 4 giờ.	100	9590000	2024-04-09 20:19:43.465133+07	2024-04-09 20:19:43.465133+07
 38	16	Điện Thoại OPPO RENO8 Pro (12GB/256GB) - Hàng Chính Hãng - Quà tặng độc quyền	Bên trong hộp: \n\n-OPPO RENO8 Pro\n\n- Cáp USB Type C\n\n- Củ sạc Super VOOC 80W\n\n- Không tai nghe\n\n- Dụng cụ lấy SIM\n\n- Sách hướng dẫn\n\n- Miếng dán màn hình (Đã dán sẵn)\n\n- Vỏ bảo vệ\n\n\n\nThông tin bảo hành:\n\n- Sản phẩm được bảo hành 12 tháng tại các trung tâm bảo hành OPPO\n\n- 1 đổi 1 trong 30 ngày đầu sử dụng (Lỗi phần cứng sản xuất)\n\n- Giao hàng trên toàn quốc\n\n- Hotline: 1800 577 776 (miễn phí).	100	13990000	2024-04-09 20:21:58.385237+07	2024-04-09 20:21:58.385237+07
+32	15	Điện thoại Samsung Galaxy M14 5G (4GB/128GB)	Thông tin chi tiết và đặc điểm kỹ thuật của sản phẩm chưa được cập nhật cho đến khi có thông báo từ phía nhãn hàng	97	3790000	2024-04-09 19:57:08.664269+07	2024-04-09 19:57:08.664269+07
 39	17	Điện thoại Apple iPhone 13 128GB	Thông số kỹ thuật\n\nMàn hình: OLED6.1"Super Retina XDR\n\nHệ điều hành: iOS 15\n\nCamera sau: 2 camera 12 MP\n\nCamera trước: 12 MP\n\nChip: Apple A15 Bionic\n\nRAM: 4 GB\n\nBộ nhớ trong: 128 GB\n\nSIM: 1 Nano SIM & 1 eSIMHỗ trợ 5G\n\nPin, Sạc: 20 W\n\n\n\nBộ sản phẩm bao gồm: thân máy, sách hướng dẫn,...\n\n\n\nThông tin bảo hành\n\nBảo hành: 12 tháng kể từ ngày kích hoạt sản phẩm.\n\nKích hoạt bảo hành tại: https://checkcoverage.apple.com/vn/en/\n\n\n\nHướng dẫn kiểm tra địa điểm bảo hành gần nhất:\n\nBước 1: Truy cập vào đường link https://getsupport.apple.com/?caller=grl&locale=en_VN \n\nBước 2: Chọn sản phẩm.\n\nBước 3: Điền Apple ID, nhập mật khẩu.\n\nSau khi hoàn tất, hệ thống sẽ gợi ý những trung tâm bảo hành gần nhất.\n\n\n\nTại Việt Nam, về chính sách bảo hành và đổi trả của Apple, "sẽ được áp dụng chung" theo các điều khoản được liệt kê dưới đây:\n\n\n\n1) Chính sách chung: https://www.apple.com/legal/warranty/products/warranty-rest-of-apac-vietnamese.html\n\n\n\n2) Chính sách cho phụ kiện: https://www.apple.com/legal/warranty/products/accessory-warranty-vietnam.html\n\n\n\n3) Các trung tâm bảo hành Apple ủy quyền tại Việt Nam: https://getsupport.apple.com/repair-locations?locale=vi_VN\n\n\n\nQúy khách vui lòng đọc kỹ hướng dẫn và quy định trên các trang được Apple công bố công khai, Shop chỉ có thể hỗ trợ theo đúng chính sách được đăng công khai của thương hiệu Apple tại Việt Nam,\n\n\n\nBài viết tham khảo chính sách hỗ trợ của nhà phân phối tiêu biểu:\n\n\n\nhttps://synnexfpt.com/bao-hanh/chinh-sach-bao-hanh/?agency-group=1&agency-slug=san-pham-apple\n\n\n\n Để thuận tiện hơn trong việc xử lý khiếu nại, đơn hàng của Brand Apple thường có giá trị cao, Qúy khách mua hàng vui lòng quay lại Clip khui mở kiện hàng (khách quan nhất có thể, đủ 6 mặt) giúp Shopee có thêm căn cứ để làm việc với các bên và đẩy nhanh tiến độ xử lý giúp Qúy khách mua hàng.	100	14190000	2024-04-09 20:23:58.266697+07	2024-04-09 20:23:58.266697+07
 40	17	Điện thoại Apple iPhone 15 128GB	Thông số kỹ thuật\n\n- 6.1″\n\n- Màn hình Super Retina XDR\n\n- Nhôm với mặt sau bằng kính pha màu\n\n- Nút chuyển đổi Chuông/Im Lặng\n\n- Dynamic Island\n\n- Chip A16 Bionic với GPU 5 lõi\n\n- SOS Khẩn Cấp \n\n- Phát Hiện Va Chạm\n\n- Pin: Thời gian xem video lên đến 26 giờ\n\n- USB‑C: Hỗ trợ USB 2\n\n\n\nCamera sau\n\n- Chính 48MP | Ultra Wide\n\n- Ảnh có độ phân giải siêu cao (24MP và 48MP)\n\n- Ảnh chân dung thế hệ mới với Focus và Depth Control\n\n- Phạm vi thu phóng quang học 4x\n\n\n\nBộ sản phẩm bao gồm: \n\n•        Điện thoại \n\n•        Dây sạc\n\n•        HDSD Bảo hành điện tử 12 tháng.\n\n\n\nThông tin bảo hành:\n\nBảo hành: 12 tháng kể từ ngày kích hoạt sản phẩm.\n\nKích hoạt bảo hành tại: https://checkcoverage.apple.com/vn/en/\n\n\n\nHướng dẫn kiểm tra địa điểm bảo hành gần nhất:\n\nBước 1: Truy cập vào đường link https://getsupport.apple.com/?caller=grl&locale=en_VN \n\nBước 2: Chọn sản phẩm.\n\nBước 3: Điền Apple ID, nhập mật khẩu.\n\nSau khi hoàn tất, hệ thống sẽ gợi ý những trung tâm bảo hành gần nhất.\n\n\n\nTại Việt Nam, về chính sách bảo hành và đổi trả của Apple, "sẽ được áp dụng chung" theo các điều khoản được liệt kê dưới đây:\n\n\n\n1) Chính sách chung: https://www.apple.com/legal/warranty/products/warranty-rest-of-apac-vietnamese.html\n\n\n\n2) Chính sách cho phụ kiện: https://www.apple.com/legal/warranty/products/accessory-warranty-vietnam.html\n\n\n\n3) Các trung tâm bảo hành Apple ủy quyền tại Việt Nam: https://getsupport.apple.com/repair-locations?locale=vi_VN\n\n\n\nQúy khách vui lòng đọc kỹ hướng dẫn và quy định trên các trang được Apple công bố công khai, Shop chỉ có thể hỗ trợ theo đúng chính sách được đăng công khai của thương hiệu Apple tại Việt Nam,\n\n\n\nBài viết tham khảo chính sách hỗ trợ của nhà phân phối tiêu biểu:\n\n\n\nhttps://synnexfpt.com/bao-hanh/chinh-sach-bao-hanh/?agency-group=1&agency-slug=san-pham-apple\n\n\n\n Để thuận tiện hơn trong việc xử lý khiếu nại, đơn hàng của Brand Apple thường có giá trị cao, Qúy khách mua hàng vui lòng quay lại Clip khui mở kiện hàng (khách quan nhất có thể, đủ 6 mặt) giúp Shopee có thêm căn cứ để làm việc với các bên và đẩy nhanh tiến độ xử lý giúp Qúy khách mua hàng.	100	20390000	2024-04-09 20:26:38.259312+07	2024-04-09 20:26:38.259312+07
 41	17	Điện thoại Apple iPhone 14 128GB	iPhone 14. Với hệ thống camera kép tiên tiến nhất từng có trên iPhone. Chụp những bức ảnh tuyệt đẹp trong điều kiện từ thiếu sáng đến dư sáng. Phát hiện Va Chạm,1 một tính năng an toàn mới, thay bạn gọi trợ giúp khi cần kíp.\n\n\n\nTính năng nổi bật\n\n•        Màn hình Super Retina XDR 6,1 inch2\n\n•        Hệ thống camera tiên tiến cho chất lượng ảnh đẹp hơn trong mọi điều kiện ánh sáng\n\n•        Chế độ Điện Ảnh nay đã hỗ trợ 4K Dolby Vision tốc độ lên đến 30 fps\n\n•        Chế độ Hành Động để quay video cầm tay mượt mà, ổn định\n\n•        Công nghệ an toàn quan trọng - Phát Hiện Va Chạm1 thay bạn gọi trợ giúp khi cần kíp\n\n•        Thời lượng pin cả ngày và thời gian xem video lên đến 20 giờ3\n\n•        Chip A15 Bionic với GPU 5 lõi để đạt hiệu suất siêu nhanh. Mạng di động 5G siêu nhanh4\n\n•        Các tính năng về độ bền dẫn đầu như Ceramic Shield và khả năng chống nước5\n\n•        iOS 16 đem đến thêm nhiều cách để cá nhân hóa, giao tiếp và chia sẻ6\n\n\n\nPháp lý\n\n1SOS Khẩn Cấp sử dụng kết nối mạng di động hoặc Cuộc Gọi Wi-Fi.\n\n2Màn hình có các góc bo tròn. Khi tính theo hình chữ nhật chuẩn, kích thước màn hình theo đường chéo là 6,06 inch. Diện tích hiển thị thực tế nhỏ hơn.\n\n3Thời lượng pin khác nhau tùy theo cách sử dụng và cấu hình; truy cập apple.com/batteries để biết thêm thông tin.\n\n4Cần có gói cước dữ liệu. Mạng 5G chỉ khả dụng ở một số thị trường và được cung cấp qua một số nhà mạng. Tốc độ có thể thay đổi tùy địa điểm và nhà mạng. Để biết thông tin về hỗ trợ mạng 5G, vui lòng liên hệ nhà mạng và truy cập apple.com/iphone/cellular.\n\n5iPhone 14 có khả năng chống tia nước, chống nước và chống bụi. Sản phẩm đã qua kiểm nghiệm trong điều kiện phòng thí nghiệm có kiểm soát đạt mức IP68 theo tiêu chuẩn IEC 60529 (chống nước ở độ sâu tối đa 6 mét trong vòng tối đa 30 phút). Khả năng chống tia nước, chống nước và chống bụi không phải là các điều kiện vĩnh viễn. Khả năng này có thể giảm do hao mòn thông thường. Không sạc pin khi iPhone đang bị ướt. Vui lòng tham khảo hướng dẫn sử dụng để biết cách lau sạch và làm khô máy. Không bảo hành sản phẩm bị hỏng do thấm chất lỏng. \n\n6Một số tính năng không khả dụng tại một số quốc gia hoặc khu vực. \n\n\n\nThông số kỹ thuật\n\nTruy cập apple.com/iphone/compare để xem cấu hình đầy đủ. \n\n\n\n\n\n\n\nBộ sản phẩm bao gồm: \n\n•        Điện thoại \n\n•        Dây sạc\n\n•        HDSD Bảo hành điện tử 12 tháng.\n\n\n\nThông tin bảo hành:\n\nBảo hành: 12 tháng kể từ ngày kích hoạt sản phẩm.\n\nKích hoạt bảo hành tại: https://checkcoverage.apple.com/vn/en/\n\n\n\nHướng dẫn kiểm tra địa điểm bảo hành gần nhất:\n\nBước 1: Truy cập vào đường link https://getsupport.apple.com/?caller=grl&locale=en_VN \n\nBước 2: Chọn sản phẩm.\n\nBước 3: Điền Apple ID, nhập mật khẩu.\n\nSau khi hoàn tất, hệ thống sẽ gợi ý những trung tâm bảo hành gần nhất.\n\n\n\nTại Việt Nam, về chính sách bảo hành và đổi trả của Apple, "sẽ được áp dụng chung" theo các điều khoản được liệt kê dưới đây:\n\n\n\n1) Chính sách chung: https://www.apple.com/legal/warranty/products/warranty-rest-of-apac-vietnamese.html\n\n\n\n2) Chính sách cho phụ kiện: https://www.apple.com/legal/warranty/products/accessory-warranty-vietnam.html\n\n\n\n3) Các trung tâm bảo hành Apple ủy quyền tại Việt Nam: https://getsupport.apple.com/repair-locations?locale=vi_VN\n\n\n\nQúy khách vui lòng đọc kỹ hướng dẫn và quy định trên các trang được Apple công bố công khai, Shop chỉ có thể hỗ trợ theo đúng chính sách được đăng công khai của thương hiệu Apple tại Việt Nam,\n\n\n\nBài viết tham khảo chính sách hỗ trợ của nhà phân phối tiêu biểu:\n\n\n\nhttps://synnexfpt.com/bao-hanh/chinh-sach-bao-hanh/?agency-group=1&agency-slug=san-pham-apple\n\n\n\n Để thuận tiện hơn trong việc xử lý khiếu nại, đơn hàng của Brand Apple thường có giá trị cao, Qúy khách mua hàng vui lòng quay lại Clip khui mở kiện hàng (khách quan nhất có thể, đủ 6 mặt) giúp Shopee có thêm căn cứ để làm việc với các bên và đẩy nhanh tiến độ xử lý giúp Qúy khách mua hàng.	100	17690000	2024-04-09 20:28:26.040082+07	2024-04-09 20:28:26.040082+07
@@ -1138,7 +1367,6 @@ COPY public.products (id, productline_id, product_name, description, quantity_in
 73	26	Túi Xách Nữ Quai Xách Đeo Chéo La Muse Phủ Màu Tag Vuông Sz 21 HAPAS - TXT221226	HAPAS  Túi Xách – Giày Dép – Phụ Kiện Thời Trang\n\n\n\nMột trong những sản phẩm bán siêu chạy trên toàn hệ thống cửa hàng của Hapas. Bên cạnh đó, gam màu Basic được kết hợp hài hòa với kiểu dáng thu hút, tạo nên một siêu phẩm gây ấn tượng trong thời gian gần đây. \n\n\n\n THÔNG TIN SẢN PHẨM: Túi xách đeo chéo\n\nTúi xách nữ cầm tay cao cấp thời trang siêu hot \n\n- Kích thước: 21 x 8 x 13 cm\n\n- Chất liệu : Da PU\n\n- Trẻ trung, cá tính\n\n- Phù hợp với mọi lứa tuổi\n\n- Màu sắc basic dễ phối đồ\n\n- Phù hợp với đi chơi, đi du lịch                 \t\n\n- Bảo Hành : 6 tháng ( Về da )\n\n \n\nHƯỚNG DẪN SỬ DỤNG\n\n- Không giặt tẩy bằng các chất tẩy rửa mạnh, có thể dùng ( vỏ chuối, sữa tươi , giấm... )\n\n- Không ngâm nước quá lâu\n\n- Với các sàn phẩm sáng màu, nên vệ sinh thường xuyên\n\n- Tránh cất giữ giày khi còn ướt, ẩm..\n\n \n\nBẢO HÀNH VÀ CHĂM SÓC KHÁCH HÀNG\n\n-  Nếu sản phẩm sai mẫu mã, bị lỗi..., quý khách sẽ được miễn phí hoàn toàn cước đổi trả sản phẩm khác.\n\n- Bảo hành 6 tháng về da\n\n-  1 sản phẩm, chỉ được đổi trả 1 lần \n\n ------------------------------\n\nCÔNG TY THƯƠNG MẠI VÀ CHỊU TRÁCH NHIỆM:\n\nCÔNG TY TNHH KINH DOANH THƯƠNG MẠI HTC VIỆT NAM\n\nSố 23 Tô Vĩnh Diện, Khương Trung, Thanh Xuân, HN\n\nSĐT: 18009245 - Phím 2\n\n\n\nCảm ơn quý khách đã ghé thăm và ủng hộ HAPAS.	100	883000	2024-04-10 14:24:42.373549+07	2024-04-10 14:24:42.373549+07
 74	26	Túi Xách Nữ Đeo Vai Khoá C C'Chic Of Denim In You HAPAS - TDV23056	HAPAS  Túi Xách – Giày Dép – Phụ Kiện Thời Trang\n\n\n\n\n\n\n\nDiện túi gì đi chơi để đơn giản mà trẻ trung, sành điệu?\n\n\n\n\n\n\n\nĐó là câu hỏi của rất nhiều nàng. Thấu hiểu nhu cầu của các nàng, Hapas đem đến mẫu túi "nhìn phát mê luôn" với chất da mềm mịn và form dáng nhỏ xinh.  Dưới đây là các thông tin mô tả về mẫu túi đeo chéo nữ .....\n\n\n\n\n\n\n\n THÔNG TIN SẢN PHẨM: Túi xách đeo chéo\n\n\n\n\n\n\n\nTúi xách nữ cầm tay cao cấp thời trang siêu hot \n\n\n\n\n\n\n\n- Kích thước: 25 x 9 x 13 cm\n\n\n\n- Trẻ trung, cá tính\n\n\n\n- Phù hợp với mọi lứa tuổi\n\n\n\n- Màu sắc basic dễ phối đồ\n\n\n\n- Phù hợp với đi chơi, đi du lịch                 \t\n\n\n\n- Bảo Hành : 6 tháng ( Về da )\n\n\n\n\n\n\n\n HƯỚNG DẪN SỬ DỤNG\n\n\n\n- Không giặt tẩy bằng các chất tẩy rửa mạnh, có thể dùng ( vỏ chuối, sữa tươi , giấm... )\n\n\n\n- Không ngâm nước quá lâu\n\n\n\n- Với các sàn phẩm sáng màu, nên vệ sinh thường xuyên\n\n\n\n- Tránh cất giữ giày khi còn ướt, ẩm..\n\n\n\n\n\n\n\n BẢO HÀNH VÀ CHĂM SÓC KHÁCH HÀNG\n\n\n\n-  Nếu sản phẩm sai mẫu mã, bị lỗi..., quý khách sẽ được miễn phí hoàn toàn cước đổi trả sản phẩm khác.\n\n\n\n-  Quý khách được đổi với sản phẩm mới ngang hoặc cao giá hơn\n\n\n\n-  1 sản phẩm, chỉ được đổi trả 1 lần duy nhất.\n\n\n\n\n\n\n\nCảm ơn quý khách đã ghé thăm và ủng hộ HAPAS.\n\n\n\nVui lòng ấn "Theo dõi" để cập nhật những sản phẩm chính hãng, mới nhất nhé!	100	873000	2024-04-10 14:26:32.477908+07	2024-04-10 14:26:32.477908+07
 75	26	Túi Xách Nữ Cầm Tay La Muse Black HAPAS - TXT221226	HAPAS  Túi Xách – Giày Dép – Phụ Kiện Thời Trang\n\n\n\nMột trong những sản phẩm bán siêu chạy trên toàn hệ thống cửa hàng của Hapas. Bên cạnh đó, gam màu Basic được kết hợp hài hòa với kiểu dáng thu hút, tạo nên một siêu phẩm gây ấn tượng trong thời gian gần đây. \n\n\n\n THÔNG TIN SẢN PHẨM: Túi xách đeo chéo\n\nTúi xách nữ cầm tay cao cấp thời trang siêu hot \n\n- Kích thước: 21 x 8 x 13 cm\n\n- Chất liệu : Da PU\n\n- Trẻ trung, cá tính\n\n- Phù hợp với mọi lứa tuổi\n\n- Màu sắc basic dễ phối đồ\n\n- Phù hợp với đi chơi, đi du lịch                 \t\n\n- Bảo Hành : 6 tháng ( Về da )\n\n \n\nHƯỚNG DẪN SỬ DỤNG\n\n- Không giặt tẩy bằng các chất tẩy rửa mạnh, có thể dùng ( vỏ chuối, sữa tươi , giấm... )\n\n- Không ngâm nước quá lâu\n\n- Với các sàn phẩm sáng màu, nên vệ sinh thường xuyên\n\n- Tránh cất giữ giày khi còn ướt, ẩm..\n\n \n\nBẢO HÀNH VÀ CHĂM SÓC KHÁCH HÀNG\n\n-  Nếu sản phẩm sai mẫu mã, bị lỗi..., quý khách sẽ được miễn phí hoàn toàn cước đổi trả sản phẩm khác.\n\n- Bảo hành 6 tháng về da\n\n-  1 sản phẩm, chỉ được đổi trả 1 lần \n\n ------------------------------\n\nCÔNG TY THƯƠNG MẠI VÀ CHỊU TRÁCH NHIỆM:\n\nCÔNG TY TNHH KINH DOANH THƯƠNG MẠI HTC VIỆT NAM\n\nSố 23 Tô Vĩnh Diện, Khương Trung, Thanh Xuân, HN\n\nSĐT: 18009245 - Phím 2\n\n\n\nCảm ơn quý khách đã ghé thăm và ủng hộ HAPAS.	100	883000	2024-04-10 14:35:14.504356+07	2024-04-10 14:35:14.504356+07
-76	27	Giày thể thao nam nữ Lifestyle Anta 812328063 822328063	Giày thể thao nam Lifestyle Anta 812328063\n\nĐế chống trơn trượt, kết hợp cùng kiểu dáng thể thao và màu sắc nổi bật, chắc chắn sẽ là phụ kiện được nhiều bạn lựa chọn để thể hiện phong cách thể thao khỏe khoắn, năng động.\n\n- Bên cạnh đó, chất liệu nhẹ, êm ái giúp bạn luôn cảm thấy thoải mái trong suốt quá trình vận động.\n\n- Chất liệu: SYNTHE PU/Mesh 	100	700000	2024-04-10 14:50:46.961207+07	2024-04-10 14:50:46.961207+07
 79	27	Giày thể thao nữ dòng tập Training Shoes Super Flexi Anta 822237701-4	Giày tập thể thao nữ Super Flexi Anta 822237701-4\n\n- Công nghệ đế giày Super Flexi 360 cải tiến từ công nghệ Super Flexi 2020\n\n - Đường cắt uốn lượn và song song, khắc sâu trên bề mặt đế ngoài . Hỗ trợ chuyển động linh hoạt và giảm mức tiêu thụ năng lượng. \n\n- Cấu tạo đế dày và phẳng: Phần gót và giữa bàn chân có độ dày tương đương, phần bàn chân trước mỏng hơn và vát nhẹ. Phù hợp với bước chân khi tiến về phía trước, hỗ trợ vận động và tiêu thụ năng lượng. \n\n- Bề mặt vải lưới thoáng khí, thiết kể mỏng gọn, ôm sát bàn chân, lên form dáng trẻ trung năng động. \n\n- Chất liệu: 100% vải lưới \n\n- Xuất xứ: Trung Quốc\n\nAnta được thành lập bởi Ding Shi Zhong vào năm 1994, hoạt động chủ yếu là thiết kế, phát triển, sáng tạo và tiêu thụ các loại sản phẩm thể dục thể thao. Thương Anta bao gồm giày dép thể thao, quần áo thể thao và phụ kiện. Với slogan "Keep Moving...." thể hiện sự vận động, phấn đấu không ngừng và phát triển đi lên, Anta được vinh danh là “Thương nổi tiếng Trung Quốc”, “Nhãn nổi bật Trung Quốc”, và là “Sản phẩm miễn kiểm tra chất lượng”. Anta chiếm vị trí “Thương thời trang thể thao bậc nhất trong bảng giá trị thương" (do tạp chí Forbes công bố), xếp thứ 5 trong bảng xếp hạng các thương thể thao thế giới.	100	1100000	2024-04-10 15:02:18.110599+07	2024-04-10 15:02:18.110599+07
 80	28	Bóng rổ da pu size 7 PEAK Q1231990 - Quả bóng rổ da outdoor, banh bóng rổ tặng kèm bộ phụ kiện	 Thông tin sản phẩm:\n\nThương hiệu: PEAK\n\nSân chơi banh bóng rổ: Indoor/Outdoor\n\nSize quả bóng rổ da: 7\n\nChất liệu: banh bóng rổ da PU cao cấp, được làm bằng chất liệu cao cấp chịu lực\n\n\n\nLưu ý khi sử dụng:\n\n- Không bơm quá căng, nên test hơi bóng theo hướng dẫn trên ảnh mô tả.\n\n- Không sử dụng bóng trên bề mặt sân ướt hoặc ngoài trời nắng, có thể dẫn đến nứt bề mặt bóng.\n\n- Không ngồi hoặc đặt các vật nặng lên trên bóng, có thể dẫn đến méo bóng\n\n- Tránh đập vào các vật hoặc góc nhọn, có thể dẫn đến bóng bị lồi.\n\nTrong quá trình nhận hàng và sử dụng quả bóng rổ da, nếu bạn gặp phải bất cứ vấn đề gì, xin hãy liên hệ với chúng tôi để được hỗ trợ sớm nhất.	100	249000	2024-04-10 15:06:25.435139+07	2024-04-10 15:06:25.435139+07
 81	28	Bóng rổ da pu size 7 PEAK Q1224010 - Quả bóng rổ da outdoor, banh bóng rổ tặng kèm bộ phụ kiện	Bóng rổ da pu size 7 PEAK Q1224010 - Quả bóng rổ da outdoor, banh bóng rổ tặng kèm bộ phụ kiện\n\n Thông tin sản phẩm:\n\nThương hiệu: PEAK\n\nSân chơi banh bóng rổ: Indoor/Outdoor\n\nSize quả bóng rổ da: 7\n\nChất liệu: banh bóng rổ da PU cao cấp, được làm bằng chất liệu cao cấp chịu lực\n\nLưu ý khi sử dụng:\n\n- Không bơm quá căng, nên test hơi bóng theo hướng dẫn trên ảnh mô tả.\n\n- Không sử dụng bóng trên bề mặt sân ướt hoặc ngoài trời nắng, có thể dẫn đến nứt bề mặt bóng.\n\n- Không ngồi hoặc đặt các vật nặng lên trên bóng, có thể dẫn đến méo bóng\n\n- Tránh đập vào các vật hoặc góc nhọn, có thể dẫn đến bóng bị lồi.\n\nTrong quá trình nhận hàng và sử dụng quả bóng rổ da, nếu bạn gặp phải bất cứ vấn đề gì, xin hãy liên hệ với chúng tôi để được hỗ trợ sớm nhất.	100	400000	2024-04-10 15:09:01.69273+07	2024-04-10 15:09:01.69273+07
@@ -1151,6 +1379,33 @@ COPY public.products (id, productline_id, product_name, description, quantity_in
 88	30	[Nhập SSP150K4 giảm 150k đơn 1tr] Kính bơi unisex Speedo Aquapulse Pro - 8-12266D640	Kính bơi unisex Speedo Aquapulse Pro - 8-12266D640\n\nĐặc điểm nổi bật: KÍNH BƠI NGƯỜI LỚN SPEEDO AQUAPULSE PRO (ASIA FIT)\n\nAquapulse Pro là chiếc kính biểu tượng của Speedo dành cho vận động viên bơi lội chuyên nghiệp và thể dục ba môn phối hợp. Bắt nguồn từ sự thành công của Aquapulse Max 2 Mirror, phần kính mắt đã được nâng cấp tiêu chuẩn để đạt chất lượng cao hơn. Sử dụng công nghệ tầm nhìn IQfit™ giúp hạn chế tình trạng rò rì nước khi đeo cũng như hạn chế tạo vết hằn trên mặt. Chất liệu silicone cao cấp mềm mại ôm sát đầu nhưng không gây khó chịu, ống kính tầm nhìn rộng chống mờ, bảo vệ bạn 100% khỏi tia cực tím và hạn chế tác động của ánh nắng mặt trời, cung cấp tầm nhìn ngoại vi vượt trội giúp nhìn rõ dưới nước và thoải mái bơi lội\n\nTHÔNG SỐ\n\n\n\nChất liệu: LENS: PC, vỏ: TPE, viền: Silicone, dây đeo: Silicone\n\nMã sản phẩm: 8-12266D640	100	745000	2024-04-10 22:57:48.556974+07	2024-04-10 22:57:48.556974+07
 89	30	[Nhập SSP150K4 giảm 150k đơn 1tr] Áo bra thể thao nữ Under Armour Rush Low - 1361027-001	Áo bra thể thao nữ Under Armour Rush Low - 1361027-001\n\nĐặc điểm nổi bật: ÁO NGỰC THỂ THAO NỮ UNDER ARMOUR RUSH™ LOWUA RUSH ™ là bộ sưu tập mà bạn nhất định phải khoác lên người khi đến những dịp thử thách quan trọng nhất — những buổi tập luyện khó khăn nhất, những trận đấu lớn nhất, buổi tập cường độ cao nhất của bạn. Tuyệt đối vừa vặn, giữ cho bạn khô ráo và khiến bạn cảm thấy thoải mái tối ưu để vượt qua những thử thách của bản thân.THÔNG SỐ\n\nĐược cung cấp bởi Celliant\n\n77% Polyester  23% Elastane\n\nPhù hợp với các hoạt động như đạp xe, tập tạ &amp; boxing\n\nKhi cơ thể bạn hoạt động và tạo ra năng lượng, chất liệu vải được thiết kế đặc biệt của UA RUSH ™ sẽ hấp thụ và phản xạ lại nguồn năng lượng vào cơ bắp, cải thiện độ bền và sức mạnh cho cơ thể\n\nCúp ngực mềm mại, khô nhanh, thoáng khí và hỗ trợ che phủ vượt trội\n\nCúp ngực có thể tháo rời với tag Phải &amp; Trái riêng biệt\n\nThiết kế đục lỗ tại những vùng cần tăng cường khả năng thoáng khí, hỗ trợ vận động thoải mái khi tập luyện cường độ cao\n\nThiết kế lưng sau với dây đai vải Freecut mượt mà có thể điều chỉnh linh hoạt\n\nGấu áo co giãn linh hoạt theo chuyển động cơ thể\n\nDây đai áo có thể điều chỉnh mang lại sự vừa vặn, an toàn\n\nCông nghệ kháng khuẩn ngăn chặn sự phát triển của vi khuẩn gây mùi\n\nMã sản phẩm: 1361027-001\n\n\n\n\n\nNơi sản xuất: Hàng sản xuất ở nước thứ 3 tùy từng lô hàng (Việt Nam, Trung Quốc, Ấn Độ, Campuchia...)\n\n\n\nHướng dẫn bảo quản:\n\n• Hạn chế không nên để sản phẩm tiếp xúc nhiều với chất bẩn, đặc biệt là các chất bẩn cứng đầu như máu, cà phê, nhựa trái cây…\n\n• Bảo quản sản phẩm ở nơi khô ráo, thoáng mát… để tránh các loại nấm mốc. (Nếu không sử dụng thường xuyên thì nên bỏ vào bao ni lông bịt kín hoặc hộp đựng.)\n\n• Nên sử dụng khuôn hoặc nhét giấy báo cũ vào bên trong để luôn giữ được hình dạng ban đầu (đối với sản phẩm giày dép)\n\n• Không nên phơi sản phẩm dưới nắng quá gắt. \n\n\n\nChính sách đổi trả: Áp dụng theo chính sách của sàn\n\n\n\nChính sách bảo hành: Không bảo hành\n\n\n\nXuất xứ thương hiệu: Mỹ\n\n\n\nThông Tin Thương Hiệu:\n\nUnder Amour là một công ty của Mỹ chuyên về các sản phẩm giày dép, quần áo, đồ dùng thể thao, đang phát triển cực kỳ mạnh mẽ tại thị trường Mỹ hiện nay. Được sáng lập năm 1996 bới cựu cầu thủ bóng đá trường đại học Maryland Kevin Plank, Under Armour® là nguyên mẫu khời nguồn của hàng loạt quần áo hàng hiệu – giúp cho người chơi thể thao luôn thoáng mát, khô và nhẹ mặc dù mang đến hết trận đấu.\n\nThông Tin Nhà Phân Phối:\n\nSupersports là hệ thống bán lẻ hàng đầu và chuyên phân phối các mặt hàng về thể thao tại Thái Lan và là hệ thống thuộc tập đoàn Central Retail. Supersports mang đến rất nhiều lựa chọn về giày dép và quần áo, máy tập thể dục và phụ kiện thể thao từ các thương hiệu nổi tiếng thế giới. Supersports tự hào mang đến sản phẩm chất lượng tốt và dịch vụ đặc biệt cho Việt Nam.	100	842000	2024-04-10 22:59:13.330021+07	2024-04-10 22:59:13.330021+07
 90	30	[Nhập SSP150K4 giảm 150k đơn 1tr] Kính bơi unisex Speedo Jet V2 - 8-09297B988	Kính bơi unisex Speedo Jet V2 - 8-09297B988\n\nĐặc điểm nổi bật: KÍNH BƠI NGƯỜI LỚN SPEEDO JET V2 GOG AU GREENCLEAR \n\nPhụ kiện tuyệt vời cho các buổi bơi lội đầy năng lượng, chiếc kính bảo hộ có tính năng nổi bật ở phần phần sống mũi có thể điều chỉnh để khớp với dây đeo đầu trở nên vừa vặn, thoải mái hơn khi sử dụng.\n\nTHÔNG SỐ \n\n\n\nChất liệu: Polycarbonate  Silicone\n\nMã sản phẩm: 8-09297B988 \n\n\n\n\n\nNơi sản xuất: Hàng sản xuất ở nước thứ 3 tùy từng lô hàng (Việt Nam, Trung Quốc, Ấn Độ, Campuchia...)\n\n\n\nHướng dẫn bảo quản:\n\n• Hạn chế không nên để sản phẩm tiếp xúc nhiều với chất bẩn, đặc biệt là các chất bẩn cứng đầu như máu, cà phê, nhựa trái cây…\n\n• Bảo quản sản phẩm ở nơi khô ráo, thoáng mát… để tránh các loại nấm mốc. (Nếu không sử dụng thường xuyên thì nên bỏ vào bao ni lông bịt kín hoặc hộp đựng.)\n\n• Nên sử dụng khuôn hoặc nhét giấy báo cũ vào bên trong để luôn giữ được hình dạng ban đầu (đối với sản phẩm giày dép)\n\n• Không nên phơi sản phẩm dưới nắng quá gắt. \n\n\n\nChính sách đổi trả: Áp dụng theo chính sách của sàn\n\n\n\nChính sách bảo hành: Không bảo hành\n\n\n\nXuất xứ thương hiệu: Mỹ\n\n\n\nThông Tin Thương Hiệu:\n\nSpeedo ra đời vào năm 1914,là nhà sản xuất và phân phối nổi tiếng về trang phục và phụ kiện bơi lội với khẩu hiệu “ Speed on in your Speedo’s”. Chuyên cung cấp đồ bơi nam, đồ bơi nữ, bikini, kính bơi, phụ kiện bơi lội với chất lượng tốt, mang lại cảm giác thoải mái, tự tin, linh hoạt cho người sử dụng.\n\nThông Tin Nhà Phân Phối:\n\nSupersports là hệ thống bán lẻ hàng đầu và chuyên phân phối các mặt hàng về thể thao tại Thái Lan và là hệ thống thuộc tập đoàn Central Retail. Supersports mang đến rất nhiều lựa chọn về giày dép và quần áo, máy tập thể dục và phụ kiện thể thao từ các thương hiệu nổi tiếng thế giới. Supersports tự hào mang đến sản phẩm chất lượng tốt và dịch vụ đặc biệt cho Việt Nam.	100	215000	2024-04-10 23:01:20.404128+07	2024-04-10 23:01:20.404128+07
+2	1	Laptop HP 240 G9 6L1X7PA (Core i3-1215U | 8GB | 256GB |14 inch FHD| Win11)	Laptop HP 240 G9 6L1X7PA (Intel Core i3-1215U | 8GB | 256GB | Intel Iris Xe | 14 inch FHD | Win 11 | Bạc)\n\n\n\nCPU: Intel Core i3-1215U (upto 4.40 GHz, 10MB)\n\nRAM: 8GB (1 x 8GB) DDR4-3200MHz (2 khe)\n\nỔ cứng: 256GB PCIe NVMe SSD\n\nVGA: Intel UHD Graphics\n\nMàn hình: 14 inch FullHD (1920 x 1080), IPS, narrow bezel, anti-glare, 250 nits, 45% NTSC\n\nPin: 3-cell, 41 Wh Li-ion\n\nCân nặng: 1.47 kg\n\nMàu sắc: Bạc\n\nBảo hành : 12 tháng \n\n\n\n=============\n\n***Sản phẩm có xuất hóa đơn VAT , quý khách hàng xin cung cấp thông tin lấy hóa đơn (email và thông tin MST) trước khi nhận hàng . Shop sẽ gửi hóa đơn VAT qua email trong vòng 3 ngày sau khi đơn hàng nhận thành công. \n\n\n\nAnPhatPC - Hơn 19 năm kinh nghiệm phân phối sản phẩm IT.\n\n\n\nCam kết bảo hành \n\n- Cam kết 100% chính hãng.\n\n- Bảo hành theo chính sách của nhà sản xuất: Tem serial trên sản phẩm + Phiếu bảo hành\n\n- Đổi trả trong vòng 7 ngày: Lỗi nhà sản xuất, hư hỏng trong quá trình vận chuyển, giao sai hoặc thiếu phụ kiện.\n\n- Hotline Chăm sóc Khách hàng: 0902.11.12.13\n\n- Facebook Page: https://www.facebook.com/An-Ph%C3%A1t-Computer-Shopee-112629741455805 \n\n- Youtube : https://www.youtube.com/c/AnPhatComputerpc\n\n\n\nĐịa chỉ shop : \n\n\n\n1. 49 Thái Hà - Đống Đa - Hà Nội\n\n2. 151 Lê Thanh Nghị - Hai Bà Trưng - Hà Nội\n\n3. 63 Trần Thái Tông - Phường Dịch Vọng - Cầu Giấy - Hà Nội\n\n4. 158 - 160 Lý Thường Kiệt P.14 - Q.10 - TPHCM\n\n5. 330-332 Võ Văn Tần, Phường 5, Q.3, TPHCM\n\n6. Số 4 Nguyễn Văn Cừ - Ninh Xá - Thành phố Bắc Ninh	96	9990000	2024-04-09 12:44:14.309358+07	2024-04-09 12:44:14.309358+07
+76	27	Giày thể thao nam nữ Lifestyle Anta 812328063 822328063	Giày thể thao nam Lifestyle Anta 812328063\n\nĐế chống trơn trượt, kết hợp cùng kiểu dáng thể thao và màu sắc nổi bật, chắc chắn sẽ là phụ kiện được nhiều bạn lựa chọn để thể hiện phong cách thể thao khỏe khoắn, năng động.\n\n- Bên cạnh đó, chất liệu nhẹ, êm ái giúp bạn luôn cảm thấy thoải mái trong suốt quá trình vận động.\n\n- Chất liệu: SYNTHE PU/Mesh 	97	700000	2024-04-10 14:50:46.961207+07	2024-04-10 14:50:46.961207+07
+\.
+
+
+--
+-- Data for Name: transactions; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.transactions (id, cart_id, product_id, image_product, product_name, product_price, quantity, classify, total_price, created_at, updated_at, transport_id) FROM stdin;
+8	5	8	https://down-vn.img.susercontent.com/file/vn-11134207-7qukw-lgf2158gzh4af5	Laptop Dell Vostro 3520 i3 1215U/8GB/256GB/OfficeHS/Win11 (V5I3614W1)	13000000	4	black	52000000	2024-05-02 12:36:29.758221+07	2024-05-02 12:36:29.758221+07	1
+5	5	2	https://down-vn.img.susercontent.com/file/031b1e57e7932d13598461fa47bed80f	Laptop HP 240 G9 6L1X7PA (Core i3-1215U | 8GB | 256GB |14 inch FHD| Win11)	9990000	4	gold	39960000	2024-05-02 12:31:53.426512+07	2024-05-02 12:31:53.426512+07	4
+7	5	3	https://down-vn.img.susercontent.com/file/sg-11134201-22120-979x5oormclv4a	[Nhập ELHP15 giảm 15%] LapTop HP Pavilion 15 eg2059TU-6K789PA|i5 1240P|8GB | 256GB SSD | 15.6" FHD IPS | Win 11	14790000	5	white	73950000	2024-05-02 12:30:26.360755+07	2024-05-02 12:30:26.360755+07	4
+6	5	32	https://down-vn.img.susercontent.com/file/vn-11134201-7qukw-lkgj67wqldwoc5	Điện thoại Samsung Galaxy M14 5G (4GB/128GB)	3790000	3	Blue	11370000	2024-05-02 12:37:25.19134+07	2024-05-02 12:37:25.19134+07	4
+10	5	76	https://down-vn.img.susercontent.com/file/9b0e056fe85f83f17437280e97c48d18	Giày thể thao nam nữ Lifestyle Anta 812328063 822328063	700000	3	White Green, 6	700000	2024-05-02 17:25:22.936535+07	2024-05-02 17:25:22.936535+07	4
+\.
+
+
+--
+-- Data for Name: transports; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.transports (id, status_transport, created_at, updated_at) FROM stdin;
+1	Người gửi đang chuẩn bị hàng	2024-05-02 12:30:09.96733+07	2024-05-02 12:30:09.96733+07
+2	Đơn hàng đã được giao cho bên vận chuyển	2024-05-02 14:02:11.154671+07	2024-05-02 14:02:11.154671+07
+3	Đơn hàng đang được giao đến bạn	2024-05-02 14:02:11.154671+07	2024-05-02 14:02:11.154671+07
+4	Giao hàng thành công	2024-05-02 14:02:11.154671+07	2024-05-02 14:02:11.154671+07
 \.
 
 
@@ -1158,7 +1413,9 @@ COPY public.products (id, productline_id, product_name, description, quantity_in
 -- Data for Name: user_tokens; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.user_tokens (id, user_id, refresh_token, created_at, updated_at) FROM stdin;
+COPY public.user_tokens (id, user_id, device_name, refresh_token, otp, expired_otp, status, created_at, updated_at) FROM stdin;
+5	5	Chrome	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoxNzE0NjQ1OTc1MjI5LjM5ODcsImlhdCI6MTcxNDY0NTk3NSwiZXhwIjoxNzE1MjUwNzc1fQ.W_mNTIT73zF4jo6aS07vEBw65NPxDrbLYu2XRdW249I	7566	2024-04-24 15:19:11.526+07	t	2024-04-24 15:19:02.931+07	2024-05-02 17:32:55.238+07
+6	6	Chrome	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoxNzE0MzEyMTQwMTczLjI1NjMsImlhdCI6MTcxNDMxMjE0MCwiZXhwIjoxNzE0OTE2OTQwfQ.bAu44JE_IuZw2kcf9opCt4FARy6tWV_QGFUqaueKQek	1071	2024-04-28 20:48:26.183+07	t	2024-04-28 20:48:11.905+07	2024-04-28 20:49:00.175+07
 \.
 
 
@@ -1167,6 +1424,8 @@ COPY public.user_tokens (id, user_id, refresh_token, created_at, updated_at) FRO
 --
 
 COPY public.users (users_id, username, phone_number, email, password, created_at, updated_at) FROM stdin;
+5	22026542	0325453480	bachtramtinh04@gmail.com	$2b$10$4F.W6fGISERG6/LJW.NSMugzZpmjCsWftL3oTP/qp7HEi25NwyPD2	2024-04-24 15:19:02.926+07	2024-04-24 15:19:02.926+07
+6	bachnguyen04	0325453480	22026542@vnu.edu.vn	$2b$10$S6DNVTMqtLcDVYIGRGxedOzlwIE9TLDIxS9FubbT8.0NwojJCOC1i	2024-04-28 20:48:11.897+07	2024-04-28 20:48:11.897+07
 \.
 
 
@@ -1174,7 +1433,7 @@ COPY public.users (users_id, username, phone_number, email, password, created_at
 -- Name: addresses_address_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.addresses_address_id_seq', 1, false);
+SELECT pg_catalog.setval('public.addresses_address_id_seq', 2, true);
 
 
 --
@@ -1185,10 +1444,17 @@ SELECT pg_catalog.setval('public.blacklists_id_seq', 1, false);
 
 
 --
+-- Name: cart_detail_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.cart_detail_id_seq', 10, true);
+
+
+--
 -- Name: carts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.carts_id_seq', 1, false);
+SELECT pg_catalog.setval('public.carts_id_seq', 1, true);
 
 
 --
@@ -1203,6 +1469,13 @@ SELECT pg_catalog.setval('public.categories_id_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.classifyoptions_id_seq', 6, true);
+
+
+--
+-- Name: order_detail_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.order_detail_id_seq', 1, false);
 
 
 --
@@ -1234,17 +1507,24 @@ SELECT pg_catalog.setval('public.products_id_seq', 14, true);
 
 
 --
+-- Name: transports_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.transports_id_seq', 1, false);
+
+
+--
 -- Name: user_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.user_tokens_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_tokens_id_seq', 6, true);
 
 
 --
 -- Name: users_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.users_users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_users_id_seq', 6, true);
 
 
 --
@@ -1272,6 +1552,14 @@ ALTER TABLE ONLY public.blacklists
 
 
 --
+-- Name: cart_detail cart_detail_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.cart_detail
+    ADD CONSTRAINT cart_detail_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: carts carts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1293,6 +1581,14 @@ ALTER TABLE ONLY public.categories
 
 ALTER TABLE ONLY public.classifyoptions
     ADD CONSTRAINT classifyoptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: transactions order_detail_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transactions
+    ADD CONSTRAINT order_detail_pkey PRIMARY KEY (id);
 
 
 --
@@ -1328,6 +1624,14 @@ ALTER TABLE ONLY public.products
 
 
 --
+-- Name: transports transports_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transports
+    ADD CONSTRAINT transports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: user_tokens user_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1341,6 +1645,20 @@ ALTER TABLE ONLY public.user_tokens
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (users_id);
+
+
+--
+-- Name: cart_detail ins_orderdetail; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER ins_orderdetail AFTER DELETE ON public.cart_detail FOR EACH ROW EXECUTE FUNCTION public.insert_order_detail();
+
+
+--
+-- Name: cart_detail upd_quantitystock_123; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER upd_quantitystock_123 AFTER DELETE ON public.cart_detail FOR EACH ROW EXECUTE FUNCTION public.update_quantity_stock();
 
 
 --
@@ -1365,6 +1683,14 @@ ALTER TABLE ONLY public.carts
 
 ALTER TABLE ONLY public.classifyoptions
     ADD CONSTRAINT classifyoptions_classify_id_fkey FOREIGN KEY (classify_id) REFERENCES public.productclassifies(id);
+
+
+--
+-- Name: transactions custom_fkey_transport_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.transactions
+    ADD CONSTRAINT custom_fkey_transport_id FOREIGN KEY (transport_id) REFERENCES public.transports(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

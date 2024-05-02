@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Transport.hasMany(models.Transaction, { foreignKey: 'transport_id' });
     }
   }
   Transport.init({
@@ -27,9 +28,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Transport',
-    tableName:"transports",
-    createdAt:"created_at",
-    updatedAt:"updated_at"
+    tableName: "transports",
+    createdAt: "created_at",
+    updatedAt: "updated_at"
   });
   return Transport;
 };

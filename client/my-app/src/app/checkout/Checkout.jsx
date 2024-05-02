@@ -21,6 +21,7 @@ import { Input } from "@nextui-org/react";
 import showToast from "../helpers/Toastify";
 import { ToastContainer } from "react-toastify";
 import Loading from "../Loading/Loading";
+import { set } from "cookie-cutter";
 
 function formatCurrency(value) {
   return value
@@ -66,6 +67,23 @@ export default function Checkout() {
   const validatePhone = (value) => {
     return /^[0-9]{10}$/.test(value);
   };
+  const handleBuyClick = async () => {
+    try {
+      const dataToken = await getToken();
+      const response = await client.post(`/cart/click/buy/${dataToken.userId}`);
+      if (response.data.status === 400) {
+        showToast("error", response.data.message);
+        return;
+      }
+      showToast("success", response.data.message, () => {
+        router.push("/")
+      });
+
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
 
   const isInvalid = useMemo(() => {
     if (value.trim() === "") return false;
@@ -465,7 +483,7 @@ export default function Checkout() {
                 Điều khoản Shopee
               </span>
             </div>
-            <button className={clsx(style["select__product-item"])}>
+            <button className={clsx(style["select__product-item"])} onClick={handleBuyClick}>
               Đặt hàng
             </button>
           </div>

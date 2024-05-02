@@ -243,6 +243,7 @@ export default function Header() {
                             height={50}
                             className="mr-2"
                             priority
+                            alt="product-image"
                           />
                           <div style={{ width: "80%" }}>
                             <p

@@ -3,7 +3,7 @@ const evaluate = require("../../../modelMongo/evaluate");
 const test = require("../../../modelMongo/cart");
 const {
     User,
-  } = require("../../../models/index");
+} = require("../../../models/index");
 const { json } = require("sequelize");
 module.exports = {
     getAllEvaluated: async (req, res) => {
@@ -23,11 +23,11 @@ module.exports = {
                 user_id: req.params.user_id,
                 product_id: req.params.id
             });
-    
+
             if (!evaluation) {
                 return errorResponse(res, 404, "Không tìm thấy đánh giá phù hợp");
             }
-    
+
             return successResponse(res, 200, "Lấy thành công evaluate", evaluation);
         } catch (error) {
             console.error("Lỗi khi lấy evaluate:", error);
@@ -35,22 +35,22 @@ module.exports = {
         }
     },
     pushOneEvaluate: async (req, res) => {
-        const { comment, vote } = req.body;
+        const { commented, voted } = req.body;
         const sp = new evaluate({
             user_id: req.params.user_id,
             product_id: req.params.id,
-            commented: comment,
-            voted: vote,
+            commented: commented,
+            voted: voted,
         });
         sp.save().then(() => {
-            return successResponse(res, 200, "Đẩy dữ liệu thành công");
+            return successResponse(res, 200, "Bình luật của bạn đã thành công");
         }).catch((err) => {
             return errorResponse(res, 404, "Đã xảy ra lỗi");
         })
     },
     updateOneEvaluated: async (req, res) => {
-        const filter = { 
-            product_id: req.params.id ,
+        const filter = {
+            product_id: req.params.id,
             user_id: req.params.user_id
         };
         const { comment, vote } = req.body;
@@ -66,8 +66,8 @@ module.exports = {
         }
     },
     deleteOneEvaluated: async (req, res) => {
-        const ok = await evaluate.deleteOne({ 
-            product_id: req.params.id ,
+        const ok = await evaluate.deleteOne({
+            product_id: req.params.id,
             user_id: req.params.user_id,
         });
         if (ok.deletedCount != 0) {
@@ -103,7 +103,7 @@ module.exports = {
                 product_id: id,
                 user_id: user_id,
             };
-    
+
             // Thêm các comment vào dữ liệu mới nếu chúng tồn tại và không rỗng
             for (const key in req.body) {
                 const value = req.body[key];
@@ -119,68 +119,69 @@ module.exports = {
         }
     },
     deleteOneCart: async (req, res) => {
-            const user_id = req.params.user_id;
-            const id = req.params.id;
-            const newEvaluateData = {
-                product_id: id,
-                user_id: user_id,
-            };
-    
-            // Thêm các comment vào dữ liệu mới nếu chúng tồn tại và không rỗng
-            for (const key in req.body) {
-                const value = req.body[key];
-                // Thực hiện xử lý với key và value tại đây
-                newEvaluateData[key] = value;
-            }
-            console.log(newEvaluateData);
-            const ok = await evaluate.deleteOne({ 
-                newEvaluateData
-            });
-            if (ok.deletedCount != 0) {
-                return successResponse(res, 200, "Delete thành công");
-            }
-            else {
-                return errorResponse(res, 404, "Đã xảy ra lỗi");
-        }
-    },
-    getOneDetailUser: async(req, res) => {
-        try {
-            const {user_id, id} = req.params;
-        console.log(id + " " + user_id);
-
-        const user = await User.findByPk(user_id);
-        const evaluation = await evaluate.findOne({
+        const user_id = req.params.user_id;
+        const id = req.params.id;
+        const newEvaluateData = {
+            product_id: id,
             user_id: user_id,
-            product_id: id
-        });
-        const mergedData = {
-            user_id: req.params.user_id,
-            username: user.username,
-            product_id: evaluation.product_id,
-            commented: evaluation.commented,
-            voted: evaluation.voted,
-            timecommented: evaluation.createdAt,
         };
 
-        // Trả về dữ liệu đã hợp nhất
-        return successResponse(res, 200, "Thành công", json(mergedData));
+        // Thêm các comment vào dữ liệu mới nếu chúng tồn tại và không rỗng
+        for (const key in req.body) {
+            const value = req.body[key];
+            // Thực hiện xử lý với key và value tại đây
+            newEvaluateData[key] = value;
+        }
+        console.log(newEvaluateData);
+        const ok = await evaluate.deleteOne({
+            newEvaluateData
+        });
+        if (ok.deletedCount != 0) {
+            return successResponse(res, 200, "Delete thành công");
+        }
+        else {
+            return errorResponse(res, 404, "Đã xảy ra lỗi");
+        }
+    },
+    getOneDetailUser: async (req, res) => {
+        try {
+            const { user_id, id } = req.params;
+            console.log(id + " " + user_id);
+
+            const user = await User.findByPk(user_id);
+            const evaluation = await evaluate.findOne({
+                user_id: user_id,
+                product_id: id
+            });
+            const mergedData = {
+                user_id: req.params.user_id,
+                username: user.username,
+                product_id: evaluation.product_id,
+                commented: evaluation.commented,
+                voted: evaluation.voted,
+                timecommented: evaluation.createdAt,
+            };
+
+            // Trả về dữ liệu đã hợp nhất
+            return successResponse(res, 200, "Thành công", json(mergedData));
         } catch (e) {
             return errorResponse(res, 404, "Đã xảy ra lỗi");
         }
     },
 
 
-    
-    getAllCommented: async(req, res) => {
+
+    getAllCommented: async (req, res) => {
         const id = req.params.id;
         try {
             const results = await evaluate.find({ product_id: id });
+
             for (const key in results) {
                 const user = await User.findByPk(results[key].user_id);
                 if (user) {
                     const mergedData = {
                         user_id: results[key].user_id,
-                        username: user.username,
+                        username: user.username,// mysql
                         product_id: results[key].product_id,
                         commented: results[key].commented,
                         voted: results[key].voted,
@@ -197,5 +198,5 @@ module.exports = {
             console.error("Lỗi khi lấy dữ liệu:", error);
             return errorResponse(res, 500, "Đã xảy ra lỗi khi lấy dữ liệu");
         }
-    }    
+    }
 }
