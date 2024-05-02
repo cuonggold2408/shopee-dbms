@@ -1,5 +1,5 @@
 const { errorResponse, successResponse } = require("../../../utils/response");
-const { User, Address, Cart, CartDetail } = require("../../../models/index");
+const { User, Address, Cart, CartDetail, Transaction } = require("../../../models/index");
 
 const { sequelize } = require('../../../models/index');
 
@@ -109,18 +109,22 @@ module.exports = {
       // } else {
       //   resultCache = JSON.parse(resultCache);
       // }
-      const { count, rows: cart } = await Cache.remember(
-        "product_cart",
-        60 * 60 * 24,
-        () => {
-          return CartDetail.findAndCountAll({
-            where: {
-              cart_id: id,
-            },
-          });
-        }
-      );
-
+      // const { count, rows: cart } = await Cache.remember(
+      //   "product_cart",
+      //   60 * 60 * 24,
+      //   () => {
+      //     return CartDetail.findAndCountAll({
+      //       where: {
+      //         cart_id: id,
+      //       },
+      //     });
+      //   }
+      // );
+      const { count, rows: cart } = await CartDetail.findAndCountAll({
+              where: {
+                cart_id: id,
+              },
+            });
       return successResponse(
         res,
         201,
@@ -333,6 +337,11 @@ module.exports = {
         FROM information_schema.triggers
         WHERE trigger_name = 'upd_quantitystock_123' AND event_object_table = 'cart_detail'
     ); `
+    const checkExistinsert = ` SELECT EXISTS (
+      SELECT 1
+      FROM information_schema.triggers
+      WHERE trigger_name = 'ins_orderdetail' AND event_object_table = 'cart_detail'
+  ); `
       const triggerQuery = `
             CREATE OR REPLACE FUNCTION update_quantity_stock()
             RETURNS TRIGGER AS $$
@@ -351,12 +360,36 @@ module.exports = {
             FOR EACH ROW
             EXECUTE FUNCTION update_quantity_stock();
         `;
+        const insertOrderDetail = `CREATE OR REPLACE FUNCTION insert_order_detail()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            INSERT INTO transactions (id, cart_id, product_id, image_product, product_name, 
+            product_price, quantity, classify, total_price, created_at, updated_at)
+            VALUES (OLD.id, OLD.cart_id, OLD.product_id, OLD.image_product, OLD.product_name, 
+            OLD.product_price, OLD.quantity, OLD.classify, OLD.total_price, 
+            NOW(), NOW());
+            RETURN OLD;
+        END;
+        $$ LANGUAGE plpgsql;
+        
+        CREATE TRIGGER ins_orderdetail
+        AFTER DELETE ON cart_detail
+        FOR EACH ROW
+        EXECUTE FUNCTION insert_order_detail();
+        `
       const [result, metadata] = await sequelize.query(checkExist);
-        const exists = result[0].exists;
-        console.log(exists);
+      const exists = result[0].exists;
+      console.log(exists);
+      const [resultins, metadatains] = await sequelize.query(checkExistinsert);
+      const existsins = resultins[0].exists;
+      console.log(existsins);
+
 
         if (!exists) {
             await sequelize.query(triggerQuery);
+        }
+        if(!existsins) {
+          await sequelize.query(insertOrderDetail)
         }
       const user_id = req.params.user_id;
       await CartDetail.destroy({
@@ -371,5 +404,20 @@ module.exports = {
       console.error('Error:', error);
       return errorResponse(res, 500, "Lỗi khi mua hàng");
   }
+  },
+  getTransaction: async (req, res) => {
+    try{
+      const user_id = req.params.user_id;
+
+      const transaction = await Transaction.findAll({
+        where: {
+          cart_id: user_id,
+        }
+      });
+      return errorResponse(res, 200, "Lấy đơn hàng đã mua thành công ", transaction);
+    }catch (error) {
+      console.log(error);
+      return errorResponse(res, 500, "Lỗi khi lấy đơn đã mua");
+    }
   },
 };
