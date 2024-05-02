@@ -6,7 +6,11 @@ const {
   ClassifyOption,
   ProductImage,
 } = require("../../../models/index");
+const client = require("../../../utils/redis");
+const redis = require("../../../utils/redis");
 const { errorResponse, successResponse } = require("../../../utils/response");
+
+const { Op } = require("sequelize");
 
 module.exports = {
   getProducts: async (req, res) => {
@@ -261,6 +265,154 @@ module.exports = {
     } catch (e) {
       console.log(e);
       return errorResponse(res, 500, "Đã có lỗi xảy ra");
+    }
+  },
+  searchProducts: async (req, res) => {
+    try {
+      const { q } = req.query;
+      console.log("q: ", q);
+      const searchHistoryKey = "search-not-have-user";
+
+      // Xóa từ khóa khỏi danh sách nếu nó đã tồn tại
+      await client.lRem(searchHistoryKey, 0, q);
+
+      // Đưa từ khóa vào đầu danh sách
+      await client.lPush(searchHistoryKey, q);
+
+      // Giới hạn danh sách chỉ giữ tối đa 10 từ khóa (nếu bạn muốn)
+      await client.lTrim(searchHistoryKey, 0, 5);
+
+      // Đặt thời gian hết hạn là 3 ngày
+      await client.expire(searchHistoryKey, 259200); // 3 ngày
+
+      const products = await Product.findAll({
+        where: {
+          product_name: {
+            [Op.iLike]: `%${q}%`,
+          },
+        },
+        include: [
+          {
+            model: Productline,
+            attributes: ["productline_name"],
+            include: [
+              {
+                model: Category,
+                attributes: ["category_name"],
+              },
+            ],
+          },
+          {
+            model: ProductClassify,
+            attributes: ["classify_name"],
+            include: [
+              {
+                model: ClassifyOption,
+                attributes: ["option_name"],
+                include: [
+                  {
+                    model: ProductImage,
+                    attributes: ["image_link"],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        attributes: [
+          "id",
+          "product_name",
+          "description",
+          "quantity_in_stock",
+          "price",
+        ],
+      });
+
+      // Lấy lịch sử tìm kiếm đã cập nhật
+      const searchHistoryList = await client.lRange(searchHistoryKey, 0, -1);
+      console.log("searchHistoryList: ", searchHistoryList);
+
+      return successResponse(res, 200, "Success", {
+        products,
+        searchHistoryList,
+      });
+    } catch (error) {
+      console.log(error);
+      return errorResponse(res, 500, error.message);
+    }
+  },
+  searchProductsHaveUser: async (req, res) => {
+    try {
+      const { q } = req.query;
+      console.log("q: ", q);
+      const searchHistoryKey = `search-${req.params.id}`;
+
+      // Xóa từ khóa khỏi danh sách nếu nó đã tồn tại
+      await client.lRem(searchHistoryKey, 0, q);
+
+      // Đưa từ khóa vào đầu danh sách
+      await client.lPush(searchHistoryKey, q);
+
+      // Giới hạn danh sách chỉ giữ tối đa 10 từ khóa (nếu bạn muốn)
+      await client.lTrim(searchHistoryKey, 0, 5);
+
+      // Đặt thời gian hết hạn là 3 ngày
+      await client.expire(searchHistoryKey, 259200); // 3 ngày
+
+      const products = await Product.findAll({
+        where: {
+          product_name: {
+            [Op.iLike]: `%${q}%`,
+          },
+        },
+        include: [
+          {
+            model: Productline,
+            attributes: ["productline_name"],
+            include: [
+              {
+                model: Category,
+                attributes: ["category_name"],
+              },
+            ],
+          },
+          {
+            model: ProductClassify,
+            attributes: ["classify_name"],
+            include: [
+              {
+                model: ClassifyOption,
+                attributes: ["option_name"],
+                include: [
+                  {
+                    model: ProductImage,
+                    attributes: ["image_link"],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        attributes: [
+          "id",
+          "product_name",
+          "description",
+          "quantity_in_stock",
+          "price",
+        ],
+      });
+
+      // Lấy lịch sử tìm kiếm đã cập nhật
+      const searchHistoryList = await client.lRange(searchHistoryKey, 0, -1);
+      console.log("searchHistoryList: ", searchHistoryList);
+
+      return successResponse(res, 200, "Success", {
+        products,
+        searchHistoryList,
+      });
+    } catch (error) {
+      console.log(error);
+      return errorResponse(res, 500, error.message);
     }
   },
 };

@@ -9,7 +9,8 @@ const addressController = require("../controllers/api/v1/address.controller");
 const cartController = require("../controllers/api/v1/cart.controller");
 const verifyController = require("../controllers/api/v1/verify.controller");
 
-const redis = require("../utils/redis");
+const client = require("../utils/redis");
+const { successResponse, errorResponse } = require("../utils/response");
 
 var router = express.Router();
 
@@ -34,6 +35,12 @@ router.post("/v1/auth/resend-otp", verifyController.resendOTP);
 router.get("/v1/products/category/:id", productsController.getOneCategory);
 
 router.get("/v1/products", productsController.getProducts);
+
+router.get("/v1/products/search/list", productsController.searchProducts);
+router.get(
+  "/v1/products/search/list/:id",
+  productsController.searchProductsHaveUser
+);
 
 router.get("/v1/products/category", productsController.showCategories);
 
@@ -77,11 +84,36 @@ router.post(
 );
 
 // clear cache
-// router.post("/v1/clear-cache", async (req, res) => {
-//   const client = await redis;
-//   await client.del("product_cart");
-//   res.json({ message: "Clear cache successfully" });
-// });
+router.post("/v1/clear-cache", async (req, res) => {
+  await client.del("product_cart");
+  const searchHistoryKey = "search-not-have-user";
+  await client.del(searchHistoryKey);
+  res.json({ message: "Clear cache successfully" });
+});
+
+// trả về lịch sử tìm kiếm của user không có userId
+router.get("/v1/users/search", async (req, res) => {
+  try {
+    const searchHistoryKey = "search-not-have-user";
+    const data = await client.lRange(searchHistoryKey, 0, -1);
+
+    return successResponse(res, 200, "Success", { data });
+  } catch (e) {
+    return errorResponse(res, 500, e.message);
+  }
+});
+
+// trả về lịch sử tìm kiếm của user có userId
+router.get("/v1/users/search/:id", async (req, res) => {
+  try {
+    const searchHistoryKey = `search-${req.params.id}`;
+    const data = await client.lRange(searchHistoryKey, 0, -1);
+
+    return successResponse(res, 200, "Success", { data });
+  } catch (e) {
+    return errorResponse(res, 500, e.message);
+  }
+});
 
 // api for mongoose
 router.get(
@@ -127,8 +159,6 @@ router.get(
   productsControllerMongo.getOneDetailUser
 );
 
-
-
 // hin tất cả commnt của 1 sản phẩm
 router.get(
   "/v1/user/get/all/commented/:id",
@@ -143,11 +173,9 @@ router.get("/v1/products/checkout/cart/:id", cartController.getCheckoutCart);
 router.get("/v1/testinsert", productsControllerMongo.testInsert);
 
 // click thanh toán
-router.post("/v1/cart/click/buy/:user_id", cartController.updateClickBuy)
-// lấy đơn hàng đã mua 
-router.get("/v1/transactions/get/one/:user_id", cartController.getTransaction)
-
-
+router.post("/v1/cart/click/buy/:user_id", cartController.updateClickBuy);
+// lấy đơn hàng đã mua
+router.get("/v1/transactions/get/one/:user_id", cartController.getTransaction);
 
 // router.get('/testinsert', (req, res) => {
 //   const sp = new Evaluates({

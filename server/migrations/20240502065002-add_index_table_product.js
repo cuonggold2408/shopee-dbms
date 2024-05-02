@@ -9,10 +9,9 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.addColumn("order_detail", "transport_id", {
-      type: Sequelize.INTEGER,
-
-      defaultValue: 1,
+    await queryInterface.addIndex("products", ["product_name"], {
+      name: "products_product_name_index",
+      unique: true,
     });
   },
 
@@ -23,8 +22,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-    await queryInterface.removeColumn("order_detail", "transport_id", {
-      type: Sequelize.INTEGER,
-    });
+    await queryInterface.removeIndex("products", "products_product_name_index");
   },
 };
