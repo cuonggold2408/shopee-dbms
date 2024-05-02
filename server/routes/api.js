@@ -77,11 +77,11 @@ router.post(
 );
 
 // clear cache
-router.post("/v1/clear-cache", async (req, res) => {
-  const client = await redis;
-  await client.del("product_cart");
-  res.json({ message: "Clear cache successfully" });
-});
+// router.post("/v1/clear-cache", async (req, res) => {
+//   const client = await redis;
+//   await client.del("product_cart");
+//   res.json({ message: "Clear cache successfully" });
+// });
 
 // api for mongoose
 router.get(
@@ -127,6 +127,8 @@ router.get(
   productsControllerMongo.getOneDetailUser
 );
 
+
+
 // hin tất cả commnt của 1 sản phẩm
 router.get(
   "/v1/user/get/all/commented/:id",
@@ -140,8 +142,11 @@ router.post(
 router.get("/v1/products/checkout/cart/:id", cartController.getCheckoutCart);
 router.get("/v1/testinsert", productsControllerMongo.testInsert);
 
-
+// click thanh toán
 router.post("/v1/cart/click/buy/:user_id", cartController.updateClickBuy)
+// lấy đơn hàng đã mua 
+router.get("/v1/transactions/get/one/:user_id", cartController.getTransaction)
+
 
 
 // router.get('/testinsert', (req, res) => {
