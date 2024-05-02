@@ -53,8 +53,8 @@ module.exports = {
             product_id: req.params.id,
             user_id: req.params.user_id
         };
-        const { comment, vote } = req.body;
-        const update = { commented: comment, voted: vote };
+        const { commented, voted } = req.body;
+        const update = { commented: commented, voted: voted };
         const doc = await evaluate.findOneAndUpdate(filter, update, {
             new: true
         });
@@ -62,7 +62,7 @@ module.exports = {
             return errorResponse(res, 404, "Đã xảy ra lỗi");
         }
         else {
-            return successResponse(res, 200, "Update thành công", doc);
+            return successResponse(res, 200, "Cập nhật thành công", doc);
         }
     },
     deleteOneEvaluated: async (req, res) => {

@@ -19,7 +19,8 @@ import { usePathname, useRouter } from "next/navigation";
 import Admin from "../../../../public/image/admin2.jpg";
 import { getToken } from "../../actions/gettoken.action";
 import { ToastContainer } from "react-toastify";
-
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import StarRatings from 'react-star-ratings';
 // Hàm để định dạng số tiền
 function formatCurrency(value) {
   return value
@@ -169,6 +170,8 @@ export default function Product({ id }) {
       evaluates.length > 0 ? (total / evaluates.length).toFixed(1) : 0;
     setAveragePoints(average);
   }, [evaluates]);
+
+
 
   useEffect(() => {
     async function getProductById() {
@@ -445,41 +448,17 @@ export default function Product({ id }) {
               <div className="flex flex-col items-center">
                 <div className={clsx(style.box__vote)}>
                   <div>
-                    <span className={style.voting}>{averagePoints}</span>
+                    <span className={style.voting}>{(averagePoints)}</span>
                     trên 5
                   </div>
-                  <div className="flex gap-1">
-                    <FontAwesomeIcon
-                      icon={faStar}
-                      width={20}
-                      height={20}
-                      className={style.vote__icon}
-                    />
-                    <FontAwesomeIcon
-                      icon={faStar}
-                      width={20}
-                      height={20}
-                      className={style.vote__icon}
-                    />
-                    <FontAwesomeIcon
-                      icon={faStar}
-                      width={20}
-                      height={20}
-                      className={style.vote__icon}
-                    />
-                    <FontAwesomeIcon
-                      icon={faStar}
-                      width={20}
-                      height={20}
-                      className={style.vote__icon}
-                    />
-                    <FontAwesomeIcon
-                      icon={faStar}
-                      width={20}
-                      height={20}
-                      className={style.vote__icon}
-                    />
-                  </div>
+                  <StarRatings
+                    rating={Number(averagePoints)}
+                    starRatedColor="#ff4d2d"
+                    numberOfStars={5}
+                    name='rating'
+                    starDimension="20px"
+                    starSpacing="1px"
+                  />
                 </div>
               </div>
             </div>
