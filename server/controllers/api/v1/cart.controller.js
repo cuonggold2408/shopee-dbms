@@ -6,10 +6,9 @@ const {
   Cart,
   CartDetail,
   Transaction,
+  Transport,
+  Product,
 } = require("../../../models/index");
-
-const { User, Address, Cart, CartDetail, Transaction, Transport } = require("../../../models/index");
-
 
 const { sequelize } = require("../../../models/index");
 
@@ -311,13 +310,11 @@ module.exports = {
           cart_id: user_id,
           is_selected: true,
         },
-        }
-
-      });   
+      });
       return successResponse(res, 200, "Mua hàng thành công");
     } catch (error) {
       // Xử lý lỗi nếu có
-      console.error('Error:', error);
+      console.error("Error:", error);
       return errorResponse(res, 500, "Lỗi khi mua hàng");
     }
   },
@@ -374,7 +371,7 @@ module.exports = {
       const [resultins, metadatains] = await sequelize.query(checkExistinsert);
       const existsins = resultins[0].exists;
       console.log(existsins);
-      
+
       if (!exists) {
         await sequelize.query(triggerQuery);
       }
@@ -391,7 +388,7 @@ module.exports = {
       });
       return successResponse(res, 200, "Mua hàng thành công");
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
       return errorResponse(res, 500, "Lỗi khi mua hàng");
     }
   },
@@ -404,20 +401,21 @@ module.exports = {
           cart_id: user_id,
         },
 
-      });
-
         include: [
           {
             model: Transport,
-            as: 'transport',
-            attributes: ['status_transport'],
+            as: "transport",
+            attributes: ["status_transport"],
           },
         ],
-
       });
 
-      return successResponse(res, 200, "Lấy đơn hàng đã mua thành công ", transaction);
-
+      return successResponse(
+        res,
+        200,
+        "Lấy đơn hàng đã mua thành công ",
+        transaction
+      );
     } catch (error) {
       console.log(error);
       return errorResponse(res, 500, "Lỗi khi lấy đơn đã mua");

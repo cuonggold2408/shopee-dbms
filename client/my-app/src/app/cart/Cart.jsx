@@ -83,6 +83,8 @@ export default function Cart() {
         const quantity = newQuantity;
         const id = productIndex.cart_id;
 
+        const responseClear = await client.post("/clear-cache");
+
         const response = await client.post("/products/cart", {
           id,
           product_id,
@@ -181,6 +183,7 @@ export default function Cart() {
           const response = await client.delete(
             `/auth/products/cart/${userId}/${product_id}/${classify}`
           );
+          const delCache = await client.post("/clear-cache");
           const responseData = await client.get(
             `/auth/products/cart/${userId}`
           );
@@ -207,6 +210,7 @@ export default function Cart() {
         const response = await client.get(
           `/auth/products/cart/${dataToken.userId}`
         );
+        console.log("response", response.data.data.cart);
         const cartWithTotal = response.data.data.cart.map((item) => {
           return {
             ...item,
@@ -217,6 +221,7 @@ export default function Cart() {
             isChecked: item.is_selected,
           };
         });
+        console.log("cartWithTotal", cartWithTotal);
         setCart(cartWithTotal);
       } catch (e) {
         console.log(e);

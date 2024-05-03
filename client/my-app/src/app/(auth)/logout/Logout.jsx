@@ -21,6 +21,7 @@ export default function Logout({ name }) {
   };
 
   const handleLogout = async () => {
+    const clearCache = await client.post("/clear-cache");
     const response = await client.post("/auth/logout");
     console.log("response: ", response.data);
     await deleteToken();
@@ -60,4 +61,3 @@ export default function Logout({ name }) {
     </div>
   );
 }
-

@@ -80,35 +80,18 @@ export default function Products({ name, pathName, keyWord }) {
     useEffect(() => {
       async function fetchFilterData() {
         try {
-          const dataUser = await getToken();
-
-          if (!dataUser) {
-            const response = await client.get(
-              `/products/search/list?q=${keyWord}`
-            );
-            console.log("response", response);
-            if (response.data.status !== 200) {
-              router.push("/not-found");
-            }
-            const data = response.data.data;
-            if (data.products.length === 0) {
-              showToast("error", "Không tìm thấy sản phẩm nào");
-            }
-            setProducts(data.products);
-          } else {
-            const response = await client.get(
-              `/products/search/list?q=${keyWord}/${dataUser.userId}`
-            );
-            if (response.data.status !== 200) {
-              router.push("/not-found");
-            }
-            const data = response.data.data;
-            console.log("response.data", response.data);
-            if (data.products.length === 0) {
-              showToast("error", "Không tìm thấy sản phẩm nào");
-            }
-            setProducts(data.products);
+          const response = await client.get(
+            `/products/search/list?q=${keyWord}`
+          );
+          console.log("response", response);
+          if (response.data.status !== 200) {
+            router.push("/not-found");
           }
+          const data = response.data.data;
+          if (data.products.length === 0) {
+            showToast("error", "Không tìm thấy sản phẩm nào");
+          }
+          setProducts(data.products);
         } catch (e) {
           console.log(e);
         }

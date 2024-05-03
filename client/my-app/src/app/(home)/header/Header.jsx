@@ -38,6 +38,7 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(true);
   const [focus, setFocus] = useState(false);
   const formRef = useRef();
+  const tableRef = useRef();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -86,18 +87,10 @@ export default function Header() {
 
     async function fetchSearch() {
       try {
-        const dataUser = await getToken();
-        if (dataUser) {
-          const response = await client.get(`/users/search/${dataUser.userId}`);
-          const dataSearch = response.data.data;
-          console.log("dataSearch", dataSearch);
-          setSearch(dataSearch.data);
-        } else {
-          const response = await client.get("/users/search");
-          const dataSearch = response.data.data;
-          console.log("dataSearch", dataSearch);
-          setSearch(dataSearch.data);
-        }
+        const response = await client.get("/users/search");
+        const dataSearch = response.data.data;
+        console.log("dataSearch", dataSearch);
+        setSearch(dataSearch.data);
       } catch (e) {
         console.log(e);
       }
@@ -110,7 +103,12 @@ export default function Header() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (formRef.current && !formRef.current.contains(event.target)) {
+      if (
+        formRef.current &&
+        !formRef.current.contains(event.target) &&
+        tableRef.current &&
+        !tableRef.current.contains(event.target)
+      ) {
         setFocus(false);
       }
     }
@@ -229,7 +227,7 @@ export default function Header() {
                     }}
                   >
                     {focus && (
-                      <ul className={("p-2", "border-gray-300")}>
+                      <ul ref={tableRef} className={("p-2", "border-gray-300")}>
                         {search.map((item, index) => (
                           <li
                             key={index}
