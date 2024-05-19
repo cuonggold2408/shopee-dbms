@@ -21,28 +21,60 @@ function performBackup() {
     const date = new Date().toISOString().slice(0, 10);
     const backupFile = path.join(backupPath, `backup-${date}.sql`);
 
-    // Construct the pg_dump command using environment variables
+    // Lệnh Pgdump
     const command = `pg_dump -U ${dbUser} -h ${dbHost} -d ${dbName} -f ${backupFile}`;
 
-    // Execute the command
+    // Lệnh command
     exec(command, {
         env: {
-            PGPASSWORD: dbPass  // Pass the DB password to the environment variable
+            PGPASSWORD: dbPass 
         }
     }, (error, stdout, stderr) => {
+        const logFile = path.join(__dirname, 'backup.log');
+        const logMessage = (new Date()).toISOString() + ' - ';
+
         if (error) {
-            console.error(`Backup error: ${error.message}`);
+            const message = `Backup error: ${error.message}`;
+            fs.appendFileSync(logFile, logMessage + message + '\n');
+            console.error(message);
             return;
         }
         if (stderr) {
-            console.log(`Backup stderr: ${stderr}`);
+            const message = `Backup stderr: ${stderr}`;
+            fs.appendFileSync(logFile, logMessage + message + '\n');
+            console.log(message);
             return;
         }
-        console.log(`Backup created successfully: ${backupFile}`);
+        const successMessage = `Backup created successfully: ${backupFile}`;
+        fs.appendFileSync(logFile, logMessage + successMessage + '\n');
+        console.log(successMessage);
+
+        // Xóa các file sao lưu cũ hơn 7 ngày
+        deleteOldBackups(backupPath, 7);
     });
 }
 
-// Lập lịch sao lưu hàng ngày vào lúc 2:00 sáng
+// Hàm xóa các bản sao lưu cũ hơn số ngày chỉ định
+function deleteOldBackups(directory, days) {
+    const logFile = path.join(__dirname, 'backup.log');
+    const files = fs.readdirSync(directory);
+    const now = new Date();
+
+    files.forEach(file => {
+        const filePath = path.join(directory, file);
+        const stats = fs.statSync(filePath);
+        const fileAgeInDays = (now - new Date(stats.mtime)) / (1000 * 60 * 60 * 24);
+
+        if (fileAgeInDays > days) {
+            fs.unlinkSync(filePath);
+            const deleteMessage = `Deleted old backup: ${filePath}`;
+            fs.appendFileSync(logFile, (new Date()).toISOString() + ' - ' + deleteMessage + '\n');
+            console.log(deleteMessage);
+        }
+    });
+}
+
+// Lập lịch sao lưu hàng tuần vào lúc 2:00 sáng hàng ngày
 cron.schedule('0 2 * * *', function() {
     console.log('Running a daily backup at 02:00 AM');
     performBackup();  // Gọi hàm sao lưu
