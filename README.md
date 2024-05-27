@@ -45,6 +45,9 @@ ElasticSearch:
 - Cấu hình: ![image](https://github.com/cuonggold2408/shopee-dbms/assets/124696095/6b631c99-c734-4395-bba0-9fe4981f900e)
 - API: ![image](https://github.com/cuonggold2408/shopee-dbms/assets/124696095/a7bd13d2-c957-4e4b-9b7e-deeae4a12cb9)
 
+- Xử lý khi sản phẩm hết hàng:
+  ![image](https://github.com/cuonggold2408/shopee-dbms/assets/124696095/a3fc2e59-2725-44a5-bc6c-51276c0d355a)
+
 ## Test độ chịu tải bằng JMETER (page home, login, product, cart)
 # Với 100 users vào cùng 1 thời điểm tỉ lệ lỗi là 0%
 ![image](https://github.com/cuonggold2408/shopee-dbms/assets/124696095/933ebd8c-6b2d-4796-b5fc-3165be1352e6)
