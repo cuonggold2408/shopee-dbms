@@ -329,7 +329,7 @@ module.exports = {
       SELECT 1
       FROM information_schema.triggers
       WHERE trigger_name = 'ins_orderdetail' AND event_object_table = 'cart_detail'
-  ); `;
+    ); `;
       const triggerQuery = `
             CREATE OR REPLACE FUNCTION update_quantity_stock()
             RETURNS TRIGGER AS $$
@@ -380,12 +380,35 @@ module.exports = {
       }
       const user_id = req.params.user_id;
       console.log("user_id: ", user_id);
-      await CartDetail.destroy({
-        where: {
-          cart_id: user_id,
-          is_selected: true,
-        },
-      });
+      const query_delete = `
+  DO $$
+  BEGIN
+    -- Kiểm tra điều kiện
+    IF (SELECT COALESCE(SUM(quantity), 0) FROM cart_detail WHERE cart_id = ${user_id} AND is_selected = true) > 
+       (SELECT quantity_in_stock FROM products WHERE id = ${user_id}) THEN
+        -- Nếu điều kiện thỏa mãn, raise exception và rollback transaction
+        RAISE EXCEPTION 'Không đủ số lượng trong kho';
+    END IF;
+
+    -- Xóa các hàng từ bảng cart_detail
+    DELETE FROM cart_detail WHERE cart_id = ${user_id} AND is_selected = true;
+
+  EXCEPTION
+    -- Nếu có lỗi, rollback transaction
+    WHEN OTHERS THEN
+        RAISE;
+  END;
+  $$ LANGUAGE plpgsql;
+  `;
+
+      await sequelize.query(query_delete);
+      // await CartDetail.destroy({
+      //   where: {
+      //     cart_id: user_id,
+      //     is_selected: true
+      //   }
+      // });
+      // Tạo trigger
       return successResponse(res, 200, "Mua hàng thành công");
     } catch (error) {
       console.error("Error:", error);
